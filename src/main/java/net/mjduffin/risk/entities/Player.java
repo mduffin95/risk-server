@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class Player {
+    String name;
     private Set<Territory> territories;
 
-    Player() {
+    Player(String name) {
+        this.name = name;
         territories = new HashSet<>();
-
     }
 
     void addTerritory(Territory t) {
@@ -25,4 +26,23 @@ public class Player {
         return territories.stream().map(Territory::getUnits).reduce(0, Integer::sum);
     }
 
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof Player)) {
+            return false;
+        }
+        Player p = (Player) obj;
+        if (this.name != null) {
+            return this.name.equals(p.name);
+        }
+        return false;
+    }
 }

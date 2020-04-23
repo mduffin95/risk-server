@@ -9,7 +9,7 @@ class TerritoryTest {
     @Test
     void territoryInitialisationTest() {
         Territory territory = new Territory("Test");
-        Player player = new Player();
+        Player player = new Player("Bob");
 
         territory.init(player);
 

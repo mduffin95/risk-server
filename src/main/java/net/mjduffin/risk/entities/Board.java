@@ -10,7 +10,7 @@ public class Board {
     private Map<String, Territory> territories;
     private Map<Territory, List<Territory>> adjTerritories;
 
-    Board() {
+    public Board() {
         territories = new HashMap<>();
         adjTerritories = new HashMap<>();
     }
@@ -23,7 +23,7 @@ public class Board {
         }
     }
 
-    Territory getOrCreateTerritory(String name) {
+    public Territory getOrCreateTerritory(String name) {
         Territory territory = territories.get(name);
         if (territory == null) {
             territory = new Territory(name);
@@ -44,5 +44,14 @@ public class Board {
             return true;
         }
         return false;
+    }
+
+    public boolean areConnected(Territory a, Territory b) {
+        //TODO: Use BFS to check if two territories are connected
+        return true;
+    }
+
+    public Territory getTerritory(String name) {
+        return territories.get(name);
     }
 }

@@ -23,12 +23,20 @@ public class Territory {
         return units;
     }
 
-    void addUnits(int num) {
+    public void addUnits(int num) {
         units += Math.abs(num);
     }
 
-    void subtractUnits(int num) {
+    public void subtractUnits(int num) {
         units -= Math.abs(num);
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player, int units) {
+        this.player = player;
     }
 
     //TODO: Implement equals and hashCode

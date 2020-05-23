@@ -33,7 +33,7 @@ public class Board {
         return territory;
     }
 
-    void addEdge(Territory t1, Territory t2) {
+    public void addEdge(Territory t1, Territory t2) {
         adjTerritories.get(t1).add(t2);
         adjTerritories.get(t2).add(t1);
     }

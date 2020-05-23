@@ -6,12 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class Player {
-    String name;
-    private Set<Territory> territories;
+    private final String name;
+    private final Set<Territory> territories = new HashSet<>();
 
     Player(String name) {
         this.name = name;
-        territories = new HashSet<>();
     }
 
     void addTerritory(Territory t) {

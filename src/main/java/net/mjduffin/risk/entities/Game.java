@@ -4,10 +4,32 @@ import java.util.*;
 
 public class Game {
     enum State {
-        ALLDRAFT,
-        DRAFT,
-        ATTACK,
-        FORTIFY
+        ALLDRAFT {
+            @Override
+            public State nextState() {
+                return ATTACK;
+            }
+        },
+        DRAFT {
+            @Override
+            public State nextState() {
+                return ATTACK;
+            }
+        },
+        ATTACK {
+            @Override
+            public State nextState() {
+                return FORTIFY;
+            }
+        },
+        FORTIFY {
+            @Override
+            public State nextState() {
+                return DRAFT;
+            }
+        };
+
+        public abstract State nextState();
     }
 
     Random random;
@@ -66,20 +88,7 @@ public class Game {
     }
 
     public void nextState() {
-        switch (state) {
-            case ALLDRAFT:
-                this.state = State.DRAFT;
-                break;
-            case DRAFT:
-                this.state = State.ATTACK;
-                break;
-            case ATTACK:
-                this.state = State.FORTIFY;
-                break;
-            case FORTIFY:
-                this.state = State.DRAFT;
-                break;
-        }
+        this.state = this.state.nextState();
     }
 
 }

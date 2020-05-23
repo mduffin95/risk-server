@@ -37,45 +37,61 @@ class GameManager implements PlayerInput {
     }
 
 
-    public void attack(String playerName, String attackingTerritory, String defendingTerritory) {
+    public AttackResult attack(String playerName, String attackingTerritory, String defendingTerritory) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException {
         //Verify that it's player's go
-        Player player = game.getPlayer(playerName);
+        Player player = getPlayer(playerName);
         if (!player.equals(game.getCurrentPlayer())) {
-            return;
+            throw new GameplayException("Not current player");
         }
 
-        Territory attacker = game.getBoard().getTerritory(attackingTerritory);
-        Territory defending = game.getBoard().getTerritory(defendingTerritory);
+        Territory attacker = getTerritory(attackingTerritory);
+        Territory defending = getTerritory(defendingTerritory);
 
         if (!areSamePlayer(player, attacker)) {
-            //The player calling attack is not the same as the player occupying attacking territory
-            //TODO: Throw exception
-            return;
+            throw new GameplayException("Attacking player is not the same as player calling attack");
         }
 
         if (areSamePlayer(player, defending)) {
-            //Attacker is same as defender
-            return;
+            throw new GameplayException("Attacker is same as defender");
         }
 
 
+        Engagement engagement = new Engagement(attacker, defending);
+        engagement = attack(engagement);
+
+        AttackResult result = new AttackResult();
+        result.attackTerritory = engagement.attacker.getName();
+        result.defendTerritory = engagement.defender.getName();
+        result.attackUnits = engagement.attacker.getUnits();
+        result.defendUnits = engagement.defender.getUnits();
+        return result;
     }
 
-    public void endAttack(String playerName) {
-        Player player = game.getPlayer(playerName);
+    //Assume all validation checks have already taken place
+    public Engagement attack(Engagement engagement) {
+        Territory attacker = engagement.attacker;
+        Territory defender = engagement.defender;
+
+        int attackUnits = attacker.getUnits();
+        int defendUnits = defender.getUnits();
+        return engagement;
+    }
+
+    public void endAttack(String playerName) throws PlayerNotFoundException {
+        Player player = getPlayer(playerName);
         if (game.getCurrentPlayer().equals(player)) {
             game.nextState();
         }
     }
 
-    public void fortify(String playerName, String fromTerritory, String toTerritory, int units) {
-        Player player = game.getPlayer(playerName);
+    public void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException {
+        Player player = getPlayer(playerName);
         if (!player.equals(game.getCurrentPlayer())) {
             return;
         }
 
-        Territory from = game.getBoard().getTerritory(fromTerritory);
-        Territory to = game.getBoard().getTerritory(toTerritory);
+        Territory from = getTerritory(fromTerritory);
+        Territory to = getTerritory(toTerritory);
 
         if (!areSamePlayer(player, from) || !areSamePlayer(player, to)) {
             return;
@@ -110,6 +126,22 @@ class GameManager implements PlayerInput {
         //Notify controller for this player
         PlayerOutput output = outputMap.get(nextPlayer);
         output.notifyTurn();
+    }
+
+    private Player getPlayer(String playerName) throws PlayerNotFoundException {
+        Player player = game.getPlayer(playerName);
+        if (player == null) {
+            throw new PlayerNotFoundException();
+        }
+        return player;
+    }
+
+    private Territory getTerritory(String territoryName) throws TerritoryNotFoundException {
+        Territory territory = game.getBoard().getTerritory(territoryName);
+        if (territory == null) {
+            throw new TerritoryNotFoundException();
+        }
+        return territory;
     }
 
 }

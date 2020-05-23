@@ -11,12 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class GameManagerTest {
+public class AttackTests {
     Game game;
     PlayerInput playerInput;
-    final String PLAYER_NAME = "Bob";
+    String PLAYER_A = "PlayerA";
+    String PLAYER_B = "PlayerB";
 
     @BeforeEach
     void setUp() {
@@ -24,46 +23,27 @@ class GameManagerTest {
         Random random = new Random(0);
         game = new Game(board, random);
         playerInput = new GameManager(game);
-        Player bob = game.addPlayer(PLAYER_NAME);
+        Player player_a = game.addPlayer(PLAYER_A);
+        Player player_b = game.addPlayer(PLAYER_B);
+
         Territory england = game.getBoard().getOrCreateTerritory("England");
         Territory wales = game.getBoard().getOrCreateTerritory("Wales");
-        england.init(bob);
-        wales.init(bob);
-    }
 
-    @Test
-    void draft() {
+        game.getBoard().addEdge(england, wales);
 
-        Map<String, Integer> draft = new HashMap<>();
-        draft.put("England", 1);
-        draft.put("Wales", 3);
-        playerInput.draft(PLAYER_NAME, draft);
+        england.init(player_a);
+        wales.init(player_b);
 
-        assertEquals(2, game.getBoard().getTerritory("England").getUnits());
-        assertEquals(4, game.getBoard().getTerritory("Wales").getUnits());
-    }
-
-    @Test
-    void draftTwiceInRow() {
-        Player alice = game.addPlayer("Alice");
         game.init();
+    }
+
+    @Test
+    void attack() throws TerritoryNotFoundException, PlayerNotFoundException, GameplayException {
         Map<String, Integer> draft = new HashMap<>();
         draft.put("England", 1);
         draft.put("Wales", 3);
-        playerInput.draft(PLAYER_NAME, draft);
-        playerInput.draft(PLAYER_NAME, draft);
 
-    }
 
-    @Test
-    void attack() {
-    }
-
-    @Test
-    void fortify() {
-    }
-
-    @Test
-    void endTurn() {
+        AttackResult result = playerInput.attack(PLAYER_A, "England", "Wales");
     }
 }

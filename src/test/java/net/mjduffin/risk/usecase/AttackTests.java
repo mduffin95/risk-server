@@ -1,9 +1,6 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.entities.Board;
-import net.mjduffin.risk.entities.Game;
-import net.mjduffin.risk.entities.Player;
-import net.mjduffin.risk.entities.Territory;
+import net.mjduffin.risk.entities.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +19,9 @@ public class AttackTests {
         Board board = new Board();
         Random random = new Random(0);
         game = new Game(board, random);
-        playerInput = new GameManager(game);
+        DieThrow dieThrow = new RandomDieThrow();
+        DiceManager diceManager = new DiceManager(dieThrow);
+        playerInput = new GameManager(game, diceManager);
         Player player_a = game.addPlayer(PLAYER_A);
         Player player_b = game.addPlayer(PLAYER_B);
 
@@ -40,10 +39,19 @@ public class AttackTests {
     @Test
     void attack() throws TerritoryNotFoundException, PlayerNotFoundException, GameplayException {
         Map<String, Integer> draft = new HashMap<>();
-        draft.put("England", 1);
-        draft.put("Wales", 3);
+        draft.put("England", 4);
+//        draft.put("Wales", 3);
 
+        playerInput.draft(PLAYER_A, draft);
+        draft = new HashMap<>();
+        draft.put("Wales", 1);
+        playerInput.draft(PLAYER_B, draft);
 
         AttackResult result = playerInput.attack(PLAYER_A, "England", "Wales");
+        System.out.println(result.attackUnits);
+        System.out.println(result.defendUnits);
     }
+
+//    @Test
+//    void
 }

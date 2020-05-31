@@ -1,19 +1,23 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.entities.Game;
-import net.mjduffin.risk.entities.Player;
-import net.mjduffin.risk.entities.Territory;
+import net.mjduffin.risk.entities.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.mjduffin.risk.entities.Game.State.*;
+
 class GameManager implements PlayerInput {
     private Game game;
+    private DiceManager diceManager;
+    private int leftToDraft;
 
     Map<Player, PlayerOutput> outputMap = new HashMap<>();
 
-    GameManager(Game game) {
+    GameManager(Game game, DiceManager diceManager) {
         this.game = game;
+        this.diceManager = diceManager;
+        leftToDraft = game.getNumPlayers();
     }
 
     //Must be called with entire draft at once
@@ -33,7 +37,15 @@ class GameManager implements PlayerInput {
                 game.getBoard().getTerritory(territoryName).addUnits(units);
             }
         }
-        game.nextState();
+
+        if (game.getState() == ALLDRAFT) {
+            leftToDraft--;
+            if (leftToDraft == 0) {
+                game.nextState();
+            }
+        } else if (game.getState() == DRAFT) {
+            game.nextState();
+        }
     }
 
 
@@ -72,8 +84,29 @@ class GameManager implements PlayerInput {
         Territory attacker = engagement.attacker;
         Territory defender = engagement.defender;
 
-        int attackUnits = attacker.getUnits();
+        //Subtract 1 as needs to remain on territory
+        int attackUnits = attacker.getUnits() - 1;
         int defendUnits = defender.getUnits();
+        int originalAttackers = attackUnits;
+        int originalDefenders = defendUnits;
+
+        try {
+            while (attackUnits > 0 && defendUnits > 0) {
+                int toAttack = Math.min(attackUnits, 3);
+                int toDefend = Math.min(defendUnits, 2);
+                attackUnits -= toAttack;
+                defendUnits -= toDefend;
+                DiceManager.Result r = diceManager.engage(toAttack, toDefend);
+                attackUnits += r.getAttackers();
+                defendUnits += r.getDefenders();
+            }
+        } catch (GameplayException e) {
+            e.printStackTrace();
+        }
+
+        attacker.subtractUnits(originalAttackers - attackUnits);
+        defender.subtractUnits(originalDefenders - defendUnits);
+
         return engagement;
     }
 

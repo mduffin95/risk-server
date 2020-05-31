@@ -10,8 +10,16 @@ public class DiceManager {
     private final DieThrow random;
 
     public static class Result {
-        int attackers;
-        int defenders;
+        protected int attackers;
+        protected int defenders;
+
+        public int getAttackers() {
+            return attackers;
+        }
+
+        public int getDefenders() {
+            return defenders;
+        }
     }
 
     public DiceManager(DieThrow random) {

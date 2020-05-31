@@ -3,7 +3,7 @@ package net.mjduffin.risk.entities;
 import java.util.*;
 
 public class Game {
-    enum State {
+    public enum State {
         ALLDRAFT {
             @Override
             public State nextState() {
@@ -89,6 +89,14 @@ public class Game {
 
     public void nextState() {
         this.state = this.state.nextState();
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public int getNumPlayers() {
+        return players.size();
     }
 
 }

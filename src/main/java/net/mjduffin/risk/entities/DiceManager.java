@@ -7,14 +7,14 @@ import java.util.PriorityQueue;
 import java.util.Random;
 
 public class DiceManager {
-    private final Random random;
+    private final DieThrow random;
 
     public static class Result {
         int attackers;
         int defenders;
     }
 
-    public DiceManager(Random random) {
+    public DiceManager(DieThrow random) {
         this.random = random;
     }
 
@@ -26,11 +26,11 @@ public class DiceManager {
         PriorityQueue<Integer> defendResults = new PriorityQueue<>(Collections.reverseOrder());
 
         for (int i = 0; i < attackers; i++) {
-            int num = random.nextInt(6) + 1;
+            int num = random.getDieValue();
             attackResults.add(num);
         }
         for (int i = 0; i < defenders; i++) {
-            int num = random.nextInt(6) + 1;
+            int num = random.getDieValue();
             defendResults.add(num);
         }
 

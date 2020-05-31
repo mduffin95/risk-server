@@ -66,6 +66,26 @@ public class AttackTests {
         assertEquals(0, result.defendUnits);
     }
 
+    @Test
+    void attackDefenderWins() throws TerritoryNotFoundException, PlayerNotFoundException, GameplayException {
+        Map<String, Integer> draft = new HashMap<>();
+        draft.put("England", 3);
+
+        DieThrow dieThrow = Mockito.mock(DieThrow.class);
+        when(dieThrow.getDieValue()).thenReturn(1).thenReturn(2).thenReturn(3).thenReturn(3).thenReturn(3).thenReturn(1).thenReturn(4);
+        PlayerInput playerInput = createTwoPlayerGame(dieThrow);
+        playerInput.draft(PLAYER_A, draft);
+        draft = new HashMap<>();
+        draft.put("Wales", 1);
+        playerInput.draft(PLAYER_B, draft);
+
+        AttackResult result = playerInput.attack(PLAYER_A, "England", "Wales");
+
+        //There has to be one unit left for the attacker
+        assertEquals(1, result.attackUnits);
+        assertEquals(2, result.defendUnits);
+    }
+
 //    @Test
 //    void
 }

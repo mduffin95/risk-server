@@ -4,6 +4,12 @@ import java.util.*;
 
 public class Game {
     public enum State {
+        SETUP {
+            @Override
+            public State nextState() {
+                return ALLDRAFT;
+            }
+        },
         ALLDRAFT {
             @Override
             public State nextState() {
@@ -37,8 +43,7 @@ public class Game {
     Board board;
 
     int playerIndex = 0;
-    State state = State.ALLDRAFT;
-    boolean init = false;
+    State state = State.SETUP;
 
     public Game(Board board, Random random) {
         this.players = new ArrayList<>();
@@ -46,10 +51,10 @@ public class Game {
         this.random = random;
     }
 
-    public void init() {
-        if (!init) {
+    public void start() {
+        if (getState() == State.SETUP) {
             Collections.shuffle(players, random);
-            init = true;
+            nextState();
         } else {
             //TODO: Throw exception
         }
@@ -68,7 +73,7 @@ public class Game {
     }
 
     public Player addPlayer(String playerName) {
-        if (!init) {
+        if (getState() == State.SETUP) {
             Player player = new Player(playerName);
             players.add(player);
             return player;

@@ -10,22 +10,30 @@ import static net.mjduffin.risk.entities.Game.State.*;
 class GameManager implements PlayerInput {
     private Game game;
     private DiceManager diceManager;
-    private int leftToDraft;
+    private int leftToDraft = -1;
 
     Map<Player, PlayerOutput> outputMap = new HashMap<>();
 
     GameManager(Game game, DiceManager diceManager) {
         this.game = game;
         this.diceManager = diceManager;
+    }
+
+    public void startGame() {
+        game.start();
         leftToDraft = game.getNumPlayers();
     }
 
     //Must be called with entire draft at once
-    public void draft(String playerName, Map<String, Integer> draft) {
-        //Verify that it's player's go
+    public void draft(String playerName, Map<String, Integer> draft) throws GameplayException {
+        //Verify that it's player's go (or ALL_DRAFT)
         Player player = game.getPlayer(playerName);
-        if (!player.equals(game.getCurrentPlayer())) {
-            return;
+        if (game.getState() != DRAFT) {
+            if (game.getState() != ALLDRAFT) {
+                throw new GameplayException("Not in attack phase");
+            }
+        } else if (!player.equals(game.getCurrentPlayer())) {
+            throw new GameplayException("Not current player");
         }
         //Verify total number of troops is correct
 
@@ -50,39 +58,39 @@ class GameManager implements PlayerInput {
 
 
     public AttackResult attack(String playerName, String attackingTerritory, String defendingTerritory) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException {
-        //Verify that it's player's go
+        //Verify that game is in attack phase it's player's go
+        if (game.getState() != ATTACK) {
+            throw new GameplayException("Not in attack phase");
+        }
         Player player = getPlayer(playerName);
         if (!player.equals(game.getCurrentPlayer())) {
             throw new GameplayException("Not current player");
         }
 
         Territory attacker = getTerritory(attackingTerritory);
-        Territory defending = getTerritory(defendingTerritory);
+        Territory defender = getTerritory(defendingTerritory);
 
         if (!areSamePlayer(player, attacker)) {
             throw new GameplayException("Attacking player is not the same as player calling attack");
         }
 
-        if (areSamePlayer(player, defending)) {
+        if (areSamePlayer(player, defender)) {
             throw new GameplayException("Attacker is same as defender");
         }
 
 
-        Engagement engagement = new Engagement(attacker, defending);
-        engagement = attack(engagement);
+        attack(attacker, defender);
 
         AttackResult result = new AttackResult();
-        result.attackTerritory = engagement.attacker.getName();
-        result.defendTerritory = engagement.defender.getName();
-        result.attackUnits = engagement.attacker.getUnits();
-        result.defendUnits = engagement.defender.getUnits();
+        result.attackTerritory = attacker.getName();
+        result.defendTerritory = defender.getName();
+        result.attackUnits = attacker.getUnits();
+        result.defendUnits = defender.getUnits();
         return result;
     }
 
     //Assume all validation checks have already taken place
-    public Engagement attack(Engagement engagement) {
-        Territory attacker = engagement.attacker;
-        Territory defender = engagement.defender;
+    public void attack(Territory attacker, Territory defender) {
 
         //Subtract 1 as needs to remain on territory
         int attackUnits = attacker.getUnits() - 1;
@@ -106,8 +114,6 @@ class GameManager implements PlayerInput {
 
         attacker.subtractUnits(originalAttackers - attackUnits);
         defender.subtractUnits(originalDefenders - defendUnits);
-
-        return engagement;
     }
 
     public void endAttack(String playerName) throws PlayerNotFoundException {
@@ -117,10 +123,13 @@ class GameManager implements PlayerInput {
         }
     }
 
-    public void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException {
+    public void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException {
+        if (game.getState() != FORTIFY) {
+            throw new GameplayException("Not in fortify phase");
+        }
         Player player = getPlayer(playerName);
         if (!player.equals(game.getCurrentPlayer())) {
-            return;
+            throw new GameplayException("Not current player");
         }
 
         Territory from = getTerritory(fromTerritory);

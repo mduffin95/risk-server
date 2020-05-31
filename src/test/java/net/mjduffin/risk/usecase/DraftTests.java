@@ -1,9 +1,6 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.entities.Board;
-import net.mjduffin.risk.entities.Game;
-import net.mjduffin.risk.entities.Player;
-import net.mjduffin.risk.entities.Territory;
+import net.mjduffin.risk.entities.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +20,8 @@ class DraftTests {
         Board board = new Board();
         Random random = new Random(0);
         game = new Game(board, random);
-        playerInput = new GameManager(game);
+        DiceManager diceManager = new DiceManager(new RandomDieThrow());
+        playerInput = new GameManager(game, diceManager);
         Player bob = game.addPlayer(PLAYER_NAME);
         Territory england = game.getBoard().getOrCreateTerritory("England");
         Territory wales = game.getBoard().getOrCreateTerritory("Wales");
@@ -33,7 +31,7 @@ class DraftTests {
     }
 
     @Test
-    void draft() {
+    void draft() throws GameplayException {
 
         Map<String, Integer> draft = new HashMap<>();
         draft.put("England", 1);
@@ -45,9 +43,9 @@ class DraftTests {
     }
 
     @Test
-    void draftTwiceInRow() {
+    void draftTwiceInRow() throws GameplayException {
         Player alice = game.addPlayer("Alice");
-        game.init();
+        game.start();
         Map<String, Integer> draft = new HashMap<>();
         draft.put("England", 4);
         playerInput.draft(PLAYER_NAME, draft);

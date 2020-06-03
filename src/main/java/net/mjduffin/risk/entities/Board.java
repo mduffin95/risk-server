@@ -1,9 +1,6 @@
 package net.mjduffin.risk.entities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Board {
 
@@ -30,5 +27,20 @@ public class Board {
 
     public Territory getTerritory(String name) {
         return territories.get(name);
+    }
+
+
+    public void initialiseWithPlayers(List<Player> players) {
+        List<Territory> allTerritories = new ArrayList<>(territories.values());
+
+        Collections.shuffle(allTerritories);
+
+        int i = 0;
+        for (Territory t: allTerritories) {
+            Player p = players.get(i);
+            t.init(p);
+            i = (i+1) % players.size();
+        }
+
     }
 }

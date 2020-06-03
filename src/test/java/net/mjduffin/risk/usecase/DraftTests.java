@@ -17,17 +17,20 @@ class DraftTests {
 
     @BeforeEach
     void setUp() {
-        Board board = new Board();
-        Random random = new Random(0);
-        game = new Game(board, random);
+        BoardBuilder boardBuilder = new BoardBuilder();
+        boardBuilder.addTerritory("England")
+            .addTerritory("Wales");
+        boardBuilder.addEdge("England", "Wales");
+
+        Board board = boardBuilder.build();
+        GameBuilder gameBuilder = new GameBuilder();
+
+        gameBuilder.board(board);
+        gameBuilder.addPlayer(PLAYER_NAME);
+
+        game = gameBuilder.build();
         DiceManager diceManager = new DiceManager(new RandomDieThrow());
         playerInput = new GameManager(game, diceManager);
-        Player bob = game.addPlayer(PLAYER_NAME);
-        Territory england = game.getBoard().getOrCreateTerritory("England");
-        Territory wales = game.getBoard().getOrCreateTerritory("Wales");
-        england.init(bob);
-        wales.init(bob);
-        game.getBoard().addEdge(england, wales);
     }
 
     @Test
@@ -44,8 +47,8 @@ class DraftTests {
 
     @Test
     void draftTwiceInRow() throws GameplayException {
-        Player alice = game.addPlayer("Alice");
-        game.start();
+//        Player alice = game.addPlayer("Alice");
+//        game.start();
         Map<String, Integer> draft = new HashMap<>();
         draft.put("England", 4);
         playerInput.draft(PLAYER_NAME, draft);

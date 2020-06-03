@@ -12,12 +12,17 @@ class GameManager implements PlayerInput {
     private DiceManager diceManager;
     private int leftToDraft;
 
-    Map<Player, PlayerOutput> outputMap = new HashMap<>();
+    Map<String, PlayerOutput> outputMap = new HashMap<>();
 
     GameManager(Game game, DiceManager diceManager) {
         this.game = game; //Game is fully populated
         this.diceManager = diceManager;
         leftToDraft = game.getNumPlayers();
+    }
+
+    @Override
+    public void registerPlayerOutput(PlayerOutput output) {
+        outputMap.put(output.getPlayerName(), output);
     }
 
     //Must be called with entire draft at once

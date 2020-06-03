@@ -30,6 +30,7 @@ public class GameBuilder {
     }
 
     public Game build() {
+        board.initialiseWithPlayers(players);
         return new Game(board, players, new Random(seed));
     }
 }

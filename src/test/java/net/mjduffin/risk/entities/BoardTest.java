@@ -1,5 +1,6 @@
 package net.mjduffin.risk.entities;
 
+import net.mjduffin.risk.usecase.BoardBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,21 +9,23 @@ class BoardTest {
 
     @Test
     void adjacentTerritoryTest() {
-        Board board = new Board();
-        Territory england = board.getOrCreateTerritory("England");
-        Territory wales = board.getOrCreateTerritory("Wales");
+        Board board = new BoardBuilder()
+                .addTerritory("England")
+                .addTerritory("Wales")
+                .addEdge("England", "Wales")
+                .build();
 
-        board.addEdge(england, wales);
+        Territory england = board.getTerritory("England");
+        Territory wales = board.getTerritory("Wales");
         assertTrue(board.areAdjacent(england, wales));
     }
 
     @Test
     void addPlayerTest() {
         //Test when adding a player to a territory that the player's unit count goes up by 1
-        Board board = new Board();
-        Territory england = board.getOrCreateTerritory("England");
+        Board board = new BoardBuilder().addTerritory("England").build();
         Player player = new Player("Bob");
-        england.init(player);
+        board.getTerritory("England").init(player);
 
         assertEquals(1, player.getTotalUnits());
 
@@ -31,11 +34,11 @@ class BoardTest {
     @Test
     void increaseUnitsTest() {
         //Adding more units to a territory increases a player's units
-        Board board = new Board();
-        Territory england = board.getOrCreateTerritory("England");
+        Board board = new BoardBuilder().addTerritory("England").build();
         Player player = new Player("Bob");
-        england.init(player);
-        england.addUnits(5);
+
+        board.getTerritory("England").init(player);
+        board.getTerritory("England").addUnits(5);
 
         assertEquals(6, player.getTotalUnits());
     }

@@ -9,9 +9,16 @@ public class PlayerController implements PlayerOutput {
 
     public PlayerController(String name, PlayerInput input) {
         this.input = input;
+        input.registerPlayerOutput(this);
     }
 
     @Override
     public void notifyTurn() {
+        System.out.println("Turn: " + name);
+    }
+
+    @Override
+    public String getPlayerName() {
+        return name;
     }
 }

@@ -18,24 +18,24 @@ public class AttackTests {
     String PLAYER_B = "PlayerB";
 
     PlayerInput createTwoPlayerGame(DieThrow dieThrow) {
-        Board board = new Board();
-        Random random = new Random(0);
-        Game game = new Game(board, random);
-//        DieThrow dieThrow = new RandomDieThrow();
+        BoardBuilder boardBuilder = new BoardBuilder();
+        boardBuilder.addTerritory("England")
+                .addTerritory("Wales")
+                .addEdge("England", "Wales");
+
+        Board board = boardBuilder.build();
+
+        GameBuilder gameBuilder = new GameBuilder();
+        gameBuilder.addPlayer(PLAYER_A)
+                .addPlayer(PLAYER_B)
+                .board(board);
+
+        //TODO: Make this not random
+        Game game = gameBuilder.build();
+
         DiceManager diceManager = new DiceManager(dieThrow);
         PlayerInput playerInput = new GameManager(game, diceManager);
-        Player player_a = game.addPlayer(PLAYER_A);
-        Player player_b = game.addPlayer(PLAYER_B);
 
-        Territory england = game.getBoard().getOrCreateTerritory("England");
-        Territory wales = game.getBoard().getOrCreateTerritory("Wales");
-
-        game.getBoard().addEdge(england, wales);
-
-        england.init(player_a);
-        wales.init(player_b);
-
-        playerInput.startGame();
         return playerInput;
     }
 

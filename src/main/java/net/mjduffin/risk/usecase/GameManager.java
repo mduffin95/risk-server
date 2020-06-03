@@ -10,17 +10,13 @@ import static net.mjduffin.risk.entities.Game.State.*;
 class GameManager implements PlayerInput {
     private Game game;
     private DiceManager diceManager;
-    private int leftToDraft = -1;
+    private int leftToDraft;
 
     Map<Player, PlayerOutput> outputMap = new HashMap<>();
 
     GameManager(Game game, DiceManager diceManager) {
-        this.game = game;
+        this.game = game; //Game is fully populated
         this.diceManager = diceManager;
-    }
-
-    public void startGame() {
-        game.start();
         leftToDraft = game.getNumPlayers();
     }
 
@@ -93,7 +89,7 @@ class GameManager implements PlayerInput {
     public void attack(Territory attacker, Territory defender) {
 
         //Subtract 1 as needs to remain on territory
-        int attackUnits = attacker.getUnits() - 1;
+        int attackUnits = attacker.getAvailableUnits();
         int defendUnits = defender.getUnits();
         int originalAttackers = attackUnits;
         int originalDefenders = defendUnits;
@@ -139,9 +135,8 @@ class GameManager implements PlayerInput {
             return;
         }
 
-        if (units > (from.getUnits() - 1)) {
-            //Moving too many units
-            return;
+        if (units > from.getAvailableUnits()) {
+            throw new GameplayException("Moving too many units");
         }
 
         if (game.getBoard().areConnected(from, to)) {
@@ -150,10 +145,8 @@ class GameManager implements PlayerInput {
             to.addUnits(units);
             endTurn(player);
         } else {
-            //TODO: Throw exception
-            return;
+            throw new GameplayException("Territories not connected");
         }
-
     }
 
     private boolean areSamePlayer(Player player, Territory territory) {

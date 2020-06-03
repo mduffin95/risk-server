@@ -5,7 +5,7 @@ public class Territory {
     private Player player;
     private int units;
 
-    Territory(String name) {
+    public Territory(String name) {
         this.name = name;
         this.units = 1;
     }
@@ -21,6 +21,10 @@ public class Territory {
 
     public int getUnits() {
         return units;
+    }
+
+    public int getAvailableUnits() {
+        return getUnits() - 1;
     }
 
     public void addUnits(int num) {

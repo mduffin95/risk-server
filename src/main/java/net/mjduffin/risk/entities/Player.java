@@ -9,7 +9,7 @@ public class Player {
     private final String name;
     private final Set<Territory> territories = new HashSet<>();
 
-    Player(String name) {
+    public Player(String name) {
         this.name = name;
     }
 

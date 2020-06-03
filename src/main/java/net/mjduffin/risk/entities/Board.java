@@ -10,32 +10,9 @@ public class Board {
     private Map<String, Territory> territories;
     private Map<Territory, List<Territory>> adjTerritories;
 
-    public Board() {
-        territories = new HashMap<>();
-        adjTerritories = new HashMap<>();
-    }
-
-    void removeTerritory(String label) {
-        Territory v = territories.get(label);
-        if (v != null) {
-            adjTerritories.values().stream().forEach(e -> e.remove(v));
-            adjTerritories.remove(new Territory(label));
-        }
-    }
-
-    public Territory getOrCreateTerritory(String name) {
-        Territory territory = territories.get(name);
-        if (territory == null) {
-            territory = new Territory(name);
-            territories.put(name, territory);
-        }
-        adjTerritories.putIfAbsent(territory, new ArrayList<>());
-        return territory;
-    }
-
-    public void addEdge(Territory t1, Territory t2) {
-        adjTerritories.get(t1).add(t2);
-        adjTerritories.get(t2).add(t1);
+    public Board(Map<String, Territory> territories, Map<Territory, List<Territory>> adjTerritories) {
+        this.territories = territories;
+        this.adjTerritories = adjTerritories;
     }
 
     boolean areAdjacent(Territory a, Territory b) {

@@ -27,6 +27,12 @@ public class Game {
             public State nextState() {
                 return DRAFT;
             }
+        },
+        END {
+            @Override
+            public State nextState() {
+                return END;
+            }
         };
 
         public abstract State nextState();

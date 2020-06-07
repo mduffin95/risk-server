@@ -29,6 +29,10 @@ public class Board {
         return territories.get(name);
     }
 
+    public List<Territory> getTerritories() {
+        return new ArrayList<>(territories.values());
+    }
+
 
     public void initialiseWithPlayers(List<Player> players) {
         List<Territory> allTerritories = new ArrayList<>(territories.values());

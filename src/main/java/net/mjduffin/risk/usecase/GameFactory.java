@@ -11,7 +11,7 @@ public class GameFactory {
     private static String ASIA = "Asia";
     private static String AUSTRALASIA = "Australasia";
 
-    public static void basicGame() {
+    public static PlayerInput basicGame(String[] players) {
         GameBuilder gameBuilder = new GameBuilder();
         BoardBuilder boardBuilder = new BoardBuilder();
 
@@ -33,8 +33,9 @@ public class GameFactory {
 
         Board board = boardBuilder.build();
 
-        gameBuilder.addPlayer("Joe");
-        gameBuilder.addPlayer("Sam");
+        for (int i=0; i<players.length; i++) {
+            gameBuilder.addPlayer(players[i]);
+        }
 
         gameBuilder.board(board);
         gameBuilder.seed(1234);
@@ -43,8 +44,7 @@ public class GameFactory {
         DieThrow dieThrow = new RandomDieThrow();
         DiceManager diceManager = new DiceManager(dieThrow);
         GameManager gameManager = new GameManager(game, diceManager);
+        return gameManager;
 
-        PlayerController pc1 = new PlayerController("Joe", gameManager);
-        PlayerController pc2 = new PlayerController("Sam", gameManager);
     }
 }

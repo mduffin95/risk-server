@@ -2,8 +2,11 @@ package net.mjduffin.risk.usecase;
 
 import net.mjduffin.risk.entities.*;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
@@ -152,6 +155,23 @@ class GameManager implements PlayerInput {
         } else {
             throw new GameplayException("Territories not connected");
         }
+    }
+
+    @Override
+    public GameState getGameState() {
+        GameState gameState = new GameState(game.getCurrentPlayer().getName());
+        List<Territory> territories = game.getBoard().getTerritories();
+        int sz = territories.size();
+        gameState.territories = new String[sz];
+        gameState.occupyingPlayers = new String[sz];
+        gameState.units = new Integer[sz];
+        for (int i = 0; i < sz; i++) {
+            Territory t = territories.get(i);
+            gameState.territories[i] = t.getName();
+            gameState.occupyingPlayers[i] = t.getPlayer().getName();
+            gameState.units[i] = t.getUnits();
+        }
+        return gameState;
     }
 
     private boolean areSamePlayer(Player player, Territory territory) {

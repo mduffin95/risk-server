@@ -1,5 +1,6 @@
 package net.mjduffin.risk.adapters;
 
+import net.mjduffin.risk.usecase.GameState;
 import net.mjduffin.risk.usecase.PlayerInput;
 import net.mjduffin.risk.usecase.PlayerOutput;
 
@@ -29,9 +30,8 @@ public class PlayerController implements PlayerOutput {
         return name;
     }
 
-    public void turn() {
+    public void turn(GameState gameState) {
         String input = console.get();
         System.out.println(input);
-
     }
 }

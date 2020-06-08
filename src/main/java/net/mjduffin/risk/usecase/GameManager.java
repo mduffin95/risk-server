@@ -1,5 +1,6 @@
 package net.mjduffin.risk.usecase;
 
+import net.mjduffin.risk.adapters.ConsoleController;
 import net.mjduffin.risk.entities.*;
 
 import java.util.Collection;
@@ -159,7 +160,7 @@ class GameManager implements PlayerInput {
 
     @Override
     public GameState getGameState() {
-        GameState gameState = new GameState(game.getCurrentPlayer().getName());
+        GameState gameState = new GameState(game.getCurrentPlayer().getName(), game.getState().toString());
         List<Territory> territories = game.getBoard().getTerritories();
         int sz = territories.size();
         gameState.territories = new String[sz];
@@ -202,6 +203,12 @@ class GameManager implements PlayerInput {
             throw new TerritoryNotFoundException();
         }
         return territory;
+    }
+
+    public void start(ConsoleController controller) {
+        while (!getGameState().hasEnded()) {
+            controller.takeTurn(getGameState());
+        }
     }
 
 }

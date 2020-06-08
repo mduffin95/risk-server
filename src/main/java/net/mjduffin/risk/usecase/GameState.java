@@ -2,12 +2,15 @@ package net.mjduffin.risk.usecase;
 
 public class GameState {
     private String currentPlayer;
+    private String phase;
+    public int unitsToPlace;
     public String[] territories;
     public String[] occupyingPlayers;
     public Integer[] units;
 
-    GameState(String currentPlayer) {
+    GameState(String currentPlayer, String phase) {
         this.currentPlayer = currentPlayer;
+        this.phase = phase;
     }
 
     public String getCurrentPlayer() {
@@ -16,5 +19,9 @@ public class GameState {
 
     public boolean hasEnded() {
         return false;
+    }
+
+    public String getPhase() {
+        return phase;
     }
 }

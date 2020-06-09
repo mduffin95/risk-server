@@ -166,6 +166,7 @@ class GameManager implements PlayerInput {
         gameState.territories = new String[sz];
         gameState.occupyingPlayers = new String[sz];
         gameState.units = new Integer[sz];
+        gameState.unitsToPlace = game.getDraftUnits();
         for (int i = 0; i < sz; i++) {
             Territory t = territories.get(i);
             gameState.territories[i] = t.getName();

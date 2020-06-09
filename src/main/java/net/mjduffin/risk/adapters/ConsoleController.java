@@ -46,6 +46,10 @@ public class ConsoleController {
     void printGameState(GameState gameState) {
         System.out.println("Current player: " + gameState.getCurrentPlayer());
         System.out.println("Phase: " + gameState.getPhase());
+        if (gameState.getPhase().equals("DRAFT") || gameState.getPhase().equals("ALLDRAFT")) {
+            System.out.println("Units to place: " + gameState.unitsToPlace);
+        }
+        System.out.println("***********");
         for (int i = 0; i < gameState.territories.length; i++) {
             System.out.println(gameState.territories[i] + " -> " + gameState.occupyingPlayers[i] + " (" + gameState.units[i] +")");
         }

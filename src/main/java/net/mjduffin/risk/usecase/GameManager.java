@@ -33,10 +33,8 @@ class GameManager implements PlayerInput {
     public void draft(String playerName, Map<String, Integer> draft) throws GameplayException {
         //Verify that it's player's go (or ALL_DRAFT)
         Player player = game.getPlayer(playerName);
-        if (game.getState() != DRAFT) {
-            if (game.getState() != ALLDRAFT) {
-                throw new GameplayException("Not in attack phase");
-            }
+        if (game.getState() != DRAFT && game.getState() != ALLDRAFT) {
+            throw new GameplayException("Not in attack phase");
         } else if (!player.equals(game.getCurrentPlayer())) {
             throw new GameplayException("Not current player");
         }
@@ -47,12 +45,18 @@ class GameManager implements PlayerInput {
             Integer units = e.getValue();
 
             if (units != null) {
-                game.getBoard().getTerritory(territoryName).addUnits(units);
+                Territory t = game.getBoard().getTerritory(territoryName);
+                if (t.getPlayer().equals(player)) {
+                    t.addUnits(units);
+                } else {
+                    throw new GameplayException("Wrong player");
+                }
             }
         }
 
         if (game.getState() == ALLDRAFT) {
             leftToDraft--;
+            game.nextPlayer();
             if (leftToDraft == 0) {
                 game.nextState();
             }

@@ -38,12 +38,24 @@ public class PlayerController implements PlayerOutput {
         switch (gameState.getPhase()) {
             case "DRAFT":
             case "ALLDRAFT":
+                int total = gameState.unitsToPlace;
                 Map<String, Integer> draft = new HashMap<>();
                 while (!(cmd = console.get()).equals("DONE")) {
                     String[] args = cmd.split(" ");
                     String territory = args[0];
                     int num = Integer.parseInt(args[1]);
-                    draft.put(territory, num);
+                    if (num <= total) {
+                        total -= num;
+                    } else {
+                        System.out.println("Not enough units");
+                        continue;
+                    }
+                    draft.merge(territory, num, Integer::sum);
+                    System.out.println("Units remaining: " + total);
+                    if (total == 0) {
+                        System.out.println("Finished drafting");
+                        break;
+                    }
                 }
                 try {
                     input.draft(name, draft);
@@ -52,9 +64,15 @@ public class PlayerController implements PlayerOutput {
                 }
                 break;
             case "ATTACK":
+                while (!(cmd = console.get()).equals("DONE")) {
+                    System.out.println(cmd);
+                }
+                break;
+            case "FORTIFY":
+                while (!(cmd = console.get()).equals("DONE")) {
+                    System.out.println(cmd);
+                }
                 break;
         }
-
-        System.out.println(input);
     }
 }

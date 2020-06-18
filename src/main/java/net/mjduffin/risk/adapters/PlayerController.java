@@ -39,29 +39,22 @@ public class PlayerController implements PlayerOutput {
             case "DRAFT":
             case "ALLDRAFT":
                 int total = gameState.unitsToPlace;
-                Map<String, Integer> draft = new HashMap<>();
-                while (!(cmd = console.get()).equals("DONE")) {
-                    String[] args = cmd.split(" ");
-                    String territory = args[0];
-                    int num = Integer.parseInt(args[1]);
-                    if (num <= total) {
-                        total -= num;
-                    } else {
-                        System.out.println("Not enough units");
-                        continue;
-                    }
-                    draft.merge(territory, num, Integer::sum);
-                    System.out.println("Units remaining: " + total);
-                    if (total == 0) {
-                        System.out.println("Finished drafting");
-                        break;
-                    }
+                cmd = console.get();
+                String[] args = cmd.split(" ");
+                String territory = args[0];
+                int num = Integer.parseInt(args[1]);
+                if (num <= total) {
+                    total -= num;
+                } else {
+                    System.out.println("Not enough units");
+                    break;
                 }
                 try {
-                    input.draft(name, draft);
+                    input.draftSingle(name, territory, num);
                 } catch (GameplayException e) {
                     e.printStackTrace();
                 }
+                System.out.println("Units remaining: " + total);
                 break;
             case "ATTACK":
                 while (!(cmd = console.get()).equals("DONE")) {

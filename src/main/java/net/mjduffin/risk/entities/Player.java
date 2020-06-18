@@ -29,6 +29,15 @@ public class Player {
         return name;
     }
 
+    //Assume units is within our draft limit
+    public boolean draft(Territory territory, int units) {
+        if (territories.contains(territory)) {
+            territory.addUnits(units);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

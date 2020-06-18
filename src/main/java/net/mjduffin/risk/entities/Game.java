@@ -85,8 +85,4 @@ public class Game {
         return players.size();
     }
 
-    public int getDraftUnits() {
-        //Look at current player and find correct number of units
-        return 10;
-    }
 }

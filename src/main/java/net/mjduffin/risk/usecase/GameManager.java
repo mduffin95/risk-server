@@ -15,6 +15,8 @@ class GameManager implements PlayerInput {
     private Game game;
     private DiceManager diceManager;
     private int leftToDraft;
+    private final int TOTAL_UNITS = 60;
+    Map<Player, Integer> draftRemaining = new HashMap<>();
 
     Map<String, PlayerOutput> outputMap = new HashMap<>();
 
@@ -29,15 +31,66 @@ class GameManager implements PlayerInput {
         outputMap.put(output.getPlayerName(), output);
     }
 
+    private boolean isPlayerTurn(Player player) {
+        if (player.equals(game.getCurrentPlayer()) || game.getState().equals(ALLDRAFT)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int getDraftAllowance(Player player) {
+        //If ALLDRAFT, return 10, otherwise calculate from territories owned
+        if (game.getState().equals(ALLDRAFT)) {
+            return TOTAL_UNITS / game.getNumPlayers();
+        } else {
+            //Calculate based on territories owned
+            return 10;
+        }
+    }
+
+    private int getRemainingDraft(Player player) {
+        return draftRemaining.getOrDefault(player, getDraftAllowance(player));
+    }
+
+    private boolean finishedDrafting() {
+        return draftRemaining.values().stream().allMatch(x -> x == 0);
+    }
+
+    private boolean finishedDrafting(Player player) {
+        return draftRemaining.get(player) == null || draftRemaining.get(player) == 0;
+    }
+
+    private void draftUnits(Territory territory, Player player, int units) throws GameplayException {
+
+        int remaining = getRemainingDraft(player);
+
+        if (remaining > 0 && units <= remaining) {
+            addUnitsToTerritory(territory, player, units);
+
+            //Add new units on
+            draftRemaining.put(player, remaining - units);
+        } else {
+            throw new GameplayException("Not enough units");
+        }
+    }
+
+    private void addUnitsToTerritory(Territory territory, Player player, int units) throws GameplayException {
+        if (territory.getPlayer().equals(player)) {
+            territory.addUnits(units);
+        } else {
+            throw new GameplayException("Wrong player");
+        }
+    }
+
     //Must be called with entire draft at once
     public void draft(String playerName, Map<String, Integer> draft) throws GameplayException {
         //Verify that it's player's go (or ALL_DRAFT)
         Player player = game.getPlayer(playerName);
-        if (game.getState() != DRAFT && game.getState() != ALLDRAFT) {
-            throw new GameplayException("Not in attack phase");
-        } else if (!player.equals(game.getCurrentPlayer())) {
-            throw new GameplayException("Not current player");
+        if (!isPlayerTurn(player)) {
+            throw new GameplayException("Not player's turn");
         }
+
         //Verify total number of troops is correct
 
         for (Map.Entry<String, Integer> e: draft.entrySet()) {
@@ -46,25 +99,43 @@ class GameManager implements PlayerInput {
 
             if (units != null) {
                 Territory t = game.getBoard().getTerritory(territoryName);
-                if (t.getPlayer().equals(player)) {
-                    t.addUnits(units);
-                } else {
-                    throw new GameplayException("Wrong player");
-                }
+                draftUnits(t, player, units);
             }
+
         }
 
         if (game.getState() == ALLDRAFT) {
-            leftToDraft--;
             game.nextPlayer();
-            if (leftToDraft == 0) {
+            if (finishedDrafting()) {
                 game.nextState();
             }
-        } else if (game.getState() == DRAFT) {
+        } else if (game.getState() == DRAFT && finishedDrafting(player)) {
             game.nextState();
         }
     }
 
+    @Override
+    public void draftSingle(String playerName, String territoryName, int units) throws GameplayException {
+        //Verify that it's player's go (or ALL_DRAFT)
+        Player player = game.getPlayer(playerName);
+        if (!isPlayerTurn(player)) {
+            throw new GameplayException("Not player's turn");
+        }
+
+        Territory territory = game.getBoard().getTerritory(territoryName);
+        draftUnits(territory, player, units);
+
+        if (game.getState() == ALLDRAFT) {
+            if (finishedDrafting(player)) {
+                if (finishedDrafting()) {
+                    game.nextState();
+                }
+                game.nextPlayer();
+            }
+        } else if (game.getState() == DRAFT && finishedDrafting(player)) {
+            game.nextState();
+        }
+    }
 
     public AttackResult attack(String playerName, String attackingTerritory, String defendingTerritory) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException {
         //Verify that game is in attack phase it's player's go
@@ -86,7 +157,6 @@ class GameManager implements PlayerInput {
         if (areSamePlayer(player, defender)) {
             throw new GameplayException("Attacker is same as defender");
         }
-
 
         attack(attacker, defender);
 
@@ -170,7 +240,7 @@ class GameManager implements PlayerInput {
         gameState.territories = new String[sz];
         gameState.occupyingPlayers = new String[sz];
         gameState.units = new Integer[sz];
-        gameState.unitsToPlace = game.getDraftUnits();
+        gameState.unitsToPlace = getRemainingDraft(game.getCurrentPlayer());
         for (int i = 0; i < sz; i++) {
             Territory t = territories.get(i);
             gameState.territories[i] = t.getName();

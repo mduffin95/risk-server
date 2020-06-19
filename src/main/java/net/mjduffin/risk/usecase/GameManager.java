@@ -11,19 +11,19 @@ import java.util.stream.Collectors;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
-class GameManager implements PlayerInput {
+class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObserver {
     private Game game;
     private DiceManager diceManager;
-    private int leftToDraft;
-    private final int TOTAL_UNITS = 60;
-    Map<Player, Integer> draftRemaining = new HashMap<>();
+    private Map<Player, UnitStore> unitStores = new HashMap<>();
 
     Map<String, PlayerOutput> outputMap = new HashMap<>();
 
     GameManager(Game game, DiceManager diceManager) {
         this.game = game; //Game is fully populated
         this.diceManager = diceManager;
-        leftToDraft = game.getNumPlayers();
+
+        game.registerPlayerChangeObserver(this);
+        game.registerStateChangeObserver(this);
     }
 
     @Override
@@ -39,26 +39,18 @@ class GameManager implements PlayerInput {
         }
     }
 
-    private int getDraftAllowance(Player player) {
-        //If ALLDRAFT, return 10, otherwise calculate from territories owned
-        if (game.getState().equals(ALLDRAFT)) {
-            return TOTAL_UNITS / game.getNumPlayers();
-        } else {
-            //Calculate based on territories owned
-            return 10;
-        }
-    }
-
     private int getRemainingDraft(Player player) {
-        return draftRemaining.getOrDefault(player, getDraftAllowance(player));
+        return unitStore.getUnits(player, game.getState());
     }
 
+    //Returns true if all players have finished drafting
     private boolean finishedDrafting() {
-        return draftRemaining.values().stream().allMatch(x -> x == 0);
+
     }
 
+    //Returns true if a particular player has finished drafting
     private boolean finishedDrafting(Player player) {
-        return draftRemaining.get(player) == null || draftRemaining.get(player) == 0;
+        return unitStore.finishedDrafting(player);
     }
 
     private void draftUnits(Territory territory, Player player, int units) throws GameplayException {
@@ -69,7 +61,7 @@ class GameManager implements PlayerInput {
             addUnitsToTerritory(territory, player, units);
 
             //Add new units on
-            draftRemaining.put(player, remaining - units);
+            unitStore.useUnits(player, units);
         } else {
             throw new GameplayException("Not enough units");
         }
@@ -286,4 +278,16 @@ class GameManager implements PlayerInput {
         }
     }
 
+    @Override
+    public void notify(Player player) {
+        //New player's go
+
+        //Set up new UnitStore
+        this.unitStore = new UnitStore(game.getNumPlayers(), game.getState());
+    }
+
+    @Override
+    public void notify(Game.State state) {
+        System.out.println("New state: " + state.toString());
+    }
 }

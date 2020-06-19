@@ -45,6 +45,9 @@ public class Game {
     int playerIndex = 0;
     State state = State.ALLDRAFT;
 
+    Set<PlayerChangeObserver> playerChangeObservers = new HashSet<>();
+    Set<StateChangeObserver> stateChangeObservers = new HashSet<>();
+
     //Assume game is in draft mode as soon as it is created
     public Game(Board board, List<Player> players, Random random) {
         this.players = players;
@@ -54,6 +57,7 @@ public class Game {
 
     public void nextPlayer() {
         playerIndex = (playerIndex + 1) % players.size();
+        playerChangeObservers.forEach(x -> x.notify(getCurrentPlayer()));
     }
 
     public Player getCurrentPlayer() {
@@ -75,6 +79,7 @@ public class Game {
 
     public void nextState() {
         this.state = this.state.nextState();
+        stateChangeObservers.forEach(x -> x.notify(getState()));
     }
 
     public State getState() {
@@ -83,6 +88,15 @@ public class Game {
 
     public int getNumPlayers() {
         return players.size();
+    }
+
+    public void registerPlayerChangeObserver(PlayerChangeObserver observer) {
+        playerChangeObservers.add(observer);
+    }
+
+    public void registerStateChangeObserver(StateChangeObserver observer) {
+        stateChangeObservers.add(observer);
+
     }
 
 }

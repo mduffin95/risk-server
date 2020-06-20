@@ -24,6 +24,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
 
         game.registerPlayerChangeObserver(this);
         game.registerStateChangeObserver(this);
+        game.getCurrentPlayer().calulateAndSetDraftableUnits(game.getState());
     }
 
     @Override
@@ -39,29 +40,20 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         }
     }
 
-    private int getRemainingDraft(Player player) {
-        return unitStore.getUnits(player, game.getState());
-    }
-
-    //Returns true if all players have finished drafting
-    private boolean finishedDrafting() {
-
-    }
-
     //Returns true if a particular player has finished drafting
     private boolean finishedDrafting(Player player) {
-        return unitStore.finishedDrafting(player);
+        return player.finishedDrafting();
     }
 
     private void draftUnits(Territory territory, Player player, int units) throws GameplayException {
 
-        int remaining = getRemainingDraft(player);
+        int remaining = player.getDraftableUnits();
 
         if (remaining > 0 && units <= remaining) {
             addUnitsToTerritory(territory, player, units);
 
             //Add new units on
-            unitStore.useUnits(player, units);
+            player.useUnits(units);
         } else {
             throw new GameplayException("Not enough units");
         }
@@ -98,7 +90,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
 
         if (game.getState() == ALLDRAFT) {
             game.nextPlayer();
-            if (finishedDrafting()) {
+            if (game.isFirstPlayer()) {
                 game.nextState();
             }
         } else if (game.getState() == DRAFT && finishedDrafting(player)) {
@@ -119,10 +111,10 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
 
         if (game.getState() == ALLDRAFT) {
             if (finishedDrafting(player)) {
-                if (finishedDrafting()) {
+                game.nextPlayer();
+                if (game.isFirstPlayer()) {
                     game.nextState();
                 }
-                game.nextPlayer();
             }
         } else if (game.getState() == DRAFT && finishedDrafting(player)) {
             game.nextState();
@@ -232,7 +224,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         gameState.territories = new String[sz];
         gameState.occupyingPlayers = new String[sz];
         gameState.units = new Integer[sz];
-        gameState.unitsToPlace = getRemainingDraft(game.getCurrentPlayer());
+        gameState.unitsToPlace = game.getCurrentPlayer().getDraftableUnits();
         for (int i = 0; i < sz; i++) {
             Territory t = territories.get(i);
             gameState.territories[i] = t.getName();
@@ -279,15 +271,15 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
     }
 
     @Override
-    public void notify(Player player) {
+    public void notify(Player oldPlayer, Player newPlayer) {
         //New player's go
 
-        //Set up new UnitStore
-        this.unitStore = new UnitStore(game.getNumPlayers(), game.getState());
+        //No harm doing this each time
+        newPlayer.calulateAndSetDraftableUnits(game.getState());
     }
 
     @Override
-    public void notify(Game.State state) {
-        System.out.println("New state: " + state.toString());
+    public void notify(Game.State oldState, Game.State newState) {
+        System.out.println("New state: " + newState.toString());
     }
 }

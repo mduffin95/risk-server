@@ -55,13 +55,20 @@ public class Game {
         this.random = random;
     }
 
+    //Return true if we have reached the end of a cycle
     public void nextPlayer() {
+        Player oldPlayer = getCurrentPlayer();
         playerIndex = (playerIndex + 1) % players.size();
-        playerChangeObservers.forEach(x -> x.notify(getCurrentPlayer()));
+        Player newPlayer = getCurrentPlayer();
+        playerChangeObservers.forEach(x -> x.notify(oldPlayer, newPlayer));
     }
 
     public Player getCurrentPlayer() {
         return players.get(playerIndex);
+    }
+
+    public boolean isFirstPlayer() {
+        return playerIndex == 0;
     }
 
     public Board getBoard() {
@@ -78,8 +85,10 @@ public class Game {
     }
 
     public void nextState() {
+        State oldState = getState();
         this.state = this.state.nextState();
-        stateChangeObservers.forEach(x -> x.notify(getState()));
+        State newState = getState();
+        stateChangeObservers.forEach(x -> x.notify(oldState, newState));
     }
 
     public State getState() {

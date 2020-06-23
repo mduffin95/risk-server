@@ -1,9 +1,6 @@
 package net.mjduffin.risk.adapters;
 
-import net.mjduffin.risk.usecase.GameState;
-import net.mjduffin.risk.usecase.GameplayException;
-import net.mjduffin.risk.usecase.PlayerInput;
-import net.mjduffin.risk.usecase.PlayerOutput;
+import net.mjduffin.risk.usecase.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,13 +31,12 @@ public class PlayerController implements PlayerOutput {
     }
 
     public void turn(GameState gameState) {
-        String cmd;
+        String cmd = console.get();
+        String[] args = cmd.split(" ");
         switch (gameState.getPhase()) {
             case "DRAFT":
             case "ALLDRAFT":
                 int total = gameState.unitsToPlace;
-                cmd = console.get();
-                String[] args = cmd.split(" ");
                 String territory = args[0];
                 int num = Integer.parseInt(args[1]);
                 if (num <= total) {
@@ -57,13 +53,35 @@ public class PlayerController implements PlayerOutput {
                 System.out.println("Units remaining: " + total);
                 break;
             case "ATTACK":
-                while (!(cmd = console.get()).equals("DONE")) {
-                    System.out.println(cmd);
+                try {
+                    if ("DONE".equals(args[0])) {
+                        input.endAttack(name);
+                        break;
+                    }
+                    String attackTerritory = args[0];
+                    String defendTerritory = args[1];
+                    input.attack(name, attackTerritory, defendTerritory);
+                } catch (GameplayException | TerritoryNotFoundException | PlayerNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "MOVE":
+                int toMove = Integer.parseInt(args[0]);
+                System.out.println("MOVE PHASE");
+                try {
+                    input.move(name, toMove);
+                } catch (PlayerNotFoundException e) {
+                    e.printStackTrace();
                 }
                 break;
             case "FORTIFY":
-                while (!(cmd = console.get()).equals("DONE")) {
-                    System.out.println(cmd);
+                String from = args[0];
+                String to = args[1];
+                int toFortify = Integer.parseInt(args[2]);
+                try {
+                    input.fortify(name, from, to, toFortify);
+                } catch (PlayerNotFoundException | TerritoryNotFoundException | GameplayException e) {
+                    e.printStackTrace();
                 }
                 break;
         }

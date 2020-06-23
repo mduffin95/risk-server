@@ -32,7 +32,9 @@ public class Territory {
     }
 
     public void subtractUnits(int num) {
-        units -= Math.abs(num);
+        if (num <= units) {
+            units -= Math.abs(num);
+        }
     }
 
     public Player getPlayer() {

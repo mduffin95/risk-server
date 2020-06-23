@@ -12,6 +12,7 @@ public interface PlayerInput {
     void draftSingle(String playerName, String territory, int units) throws GameplayException;
     AttackResult attack(String playerName, String attackingTerritory, String defendingTerritory) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException;
     void endAttack(String playerName) throws PlayerNotFoundException;
+    void move(String playerNmame, int units) throws PlayerNotFoundException;
     void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException;
 
     GameState getGameState();

@@ -19,7 +19,13 @@ public class Game {
         ATTACK {
             @Override
             public State nextState() {
-                return FORTIFY;
+                return MOVE;
+            }
+        },
+        MOVE {
+            @Override
+            public State nextState() {
+                return ATTACK;
             }
         },
         FORTIFY {
@@ -93,6 +99,10 @@ public class Game {
 
     public State getState() {
         return state;
+    }
+
+    public void setState(Game.State state) {
+        this.state = state;
     }
 
     public int getNumPlayers() {

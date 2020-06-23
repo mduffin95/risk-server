@@ -3,11 +3,9 @@ package net.mjduffin.risk.usecase;
 import net.mjduffin.risk.adapters.ConsoleController;
 import net.mjduffin.risk.entities.*;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
@@ -17,6 +15,8 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
     private Map<Player, UnitStore> unitStores = new HashMap<>();
 
     Map<String, PlayerOutput> outputMap = new HashMap<>();
+    Territory lastAttackingTerritory;
+    Territory lastDefendingTerritory;
 
     GameManager(Game game, DiceManager diceManager) {
         this.game = game; //Game is fully populated
@@ -149,11 +149,20 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         result.defendTerritory = defender.getName();
         result.attackUnits = attacker.getUnits();
         result.defendUnits = defender.getUnits();
+
+        if (result.defendUnits == 0) {
+            //Attacker won, set new territory owner and transition to MOVE phase
+            defender.setPlayer(player, 0);
+            game.nextState();
+        }
+
         return result;
     }
 
     //Assume all validation checks have already taken place
     public void attack(Territory attacker, Territory defender) {
+        lastAttackingTerritory = attacker;
+        lastDefendingTerritory = defender;
 
         //Subtract 1 as needs to remain on territory
         int attackUnits = attacker.getAvailableUnits();
@@ -182,8 +191,20 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
     public void endAttack(String playerName) throws PlayerNotFoundException {
         Player player = getPlayer(playerName);
         if (game.getCurrentPlayer().equals(player)) {
-            game.nextState();
+//            game.nextState();
+            game.setState(FORTIFY);
         }
+    }
+
+    @Override
+    public void move(String playerName, int units) throws PlayerNotFoundException {
+        Player p = getPlayer(playerName);
+        if (lastAttackingTerritory.getPlayer().equals(p)) {
+            lastAttackingTerritory.subtractUnits(units);
+            lastDefendingTerritory.addUnits(units);
+        }
+
+        game.nextState();
     }
 
     public void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException {
@@ -244,7 +265,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         Player nextPlayer = game.getCurrentPlayer();
 
         //Notify controller for this player
-        PlayerOutput output = outputMap.get(nextPlayer);
+        PlayerOutput output = outputMap.get(nextPlayer.getName());
         output.notifyTurn();
     }
 

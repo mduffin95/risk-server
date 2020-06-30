@@ -33,27 +33,22 @@ public class PlayerController implements PlayerOutput {
     public void turn(GameState gameState) {
         String cmd = console.get();
         String[] args = cmd.split(" ");
-        switch (gameState.getPhase()) {
-            case "DRAFT":
-            case "ALLDRAFT":
-                int total = gameState.unitsToPlace;
-                String territory = args[0];
-                int num = Integer.parseInt(args[1]);
-                if (num <= total) {
-                    total -= num;
-                } else {
-                    System.out.println("Not enough units");
-                    break;
-                }
-                try {
+        try {
+            switch (gameState.getPhase()) {
+                case "DRAFT":
+                case "ALLDRAFT":
+                    int total = gameState.unitsToPlace;
+                    String territory = args[0];
+                    int num = Integer.parseInt(args[1]);
+                    if (num <= total) {
+                        total -= num;
+                    } else {
+                        throw new GameplayException("Not enough units");
+                    }
                     input.draftSingle(name, territory, num);
-                } catch (GameplayException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Units remaining: " + total);
-                break;
-            case "ATTACK":
-                try {
+                    System.out.println("Units remaining: " + total);
+                    break;
+                case "ATTACK":
                     if ("DONE".equals(args[0])) {
                         input.endAttack(name);
                         break;
@@ -61,29 +56,22 @@ public class PlayerController implements PlayerOutput {
                     String attackTerritory = args[0];
                     String defendTerritory = args[1];
                     input.attack(name, attackTerritory, defendTerritory);
-                } catch (GameplayException | TerritoryNotFoundException | PlayerNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "MOVE":
-                int toMove = Integer.parseInt(args[0]);
-                System.out.println("MOVE PHASE");
-                try {
+                    break;
+                case "MOVE":
+                    int toMove = Integer.parseInt(args[0]);
+                    System.out.println("MOVE PHASE");
                     input.move(name, toMove);
-                } catch (PlayerNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "FORTIFY":
-                String from = args[0];
-                String to = args[1];
-                int toFortify = Integer.parseInt(args[2]);
-                try {
+                    break;
+                case "FORTIFY":
+                    String from = args[0];
+                    String to = args[1];
+                    int toFortify = Integer.parseInt(args[2]);
                     input.fortify(name, from, to, toFortify);
-                } catch (PlayerNotFoundException | TerritoryNotFoundException | GameplayException e) {
-                    e.printStackTrace();
-                }
-                break;
+
+                    break;
+            }
+        } catch (GameplayException | TerritoryNotFoundException | PlayerNotFoundException e) {
+            System.err.println("Error: " + e.getMessage());
         }
     }
 }

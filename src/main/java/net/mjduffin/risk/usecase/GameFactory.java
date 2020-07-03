@@ -1,6 +1,5 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.adapters.PlayerController;
 import net.mjduffin.risk.entities.*;
 
 public class GameFactory {

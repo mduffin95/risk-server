@@ -1,7 +1,9 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.adapters.ConsoleController;
+import net.mjduffin.risk.ConsoleGame;
 import net.mjduffin.risk.entities.*;
+import net.mjduffin.risk.usecase.request.Request;
+import net.mjduffin.risk.usecase.request.RequestAcceptor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.Map;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
-class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObserver {
+class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObserver, RequestAcceptor {
     private Game game;
     private DiceManager diceManager;
     private Map<Player, UnitStore> unitStores = new HashMap<>();
@@ -285,10 +287,14 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         return territory;
     }
 
-    public void start(ConsoleController controller) {
+    public void start(ConsoleGame controller) {
         while (!getGameState().hasEnded()) {
             controller.takeTurn(getGameState());
         }
+    }
+
+    public void request(Request request) {
+        //Take request and work out what sort of move is being played
     }
 
     @Override
@@ -302,5 +308,11 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
     @Override
     public void notify(Game.State oldState, Game.State newState) {
         System.out.println("New state: " + newState.toString());
+    }
+
+    @Override
+    public void receiveRequest(Request request) {
+        //Validate request
+        //Route requests to the relevant API functions
     }
 }

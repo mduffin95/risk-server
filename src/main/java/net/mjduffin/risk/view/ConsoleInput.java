@@ -1,4 +1,4 @@
-package net.mjduffin.risk.adapters;
+package net.mjduffin.risk.view;
 
 import java.io.BufferedReader;
 import java.io.IOException;

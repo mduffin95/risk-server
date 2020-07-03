@@ -1,4 +1,4 @@
-package net.mjduffin.risk.adapters;
+package net.mjduffin.risk.view;
 
 public interface RawInput {
     String get();

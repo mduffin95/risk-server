@@ -1,7 +1,5 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.ConsoleGame;
-
 import java.util.Map;
 
 public interface PlayerInput {
@@ -14,6 +12,4 @@ public interface PlayerInput {
     void move(String playerNmame, int units) throws PlayerNotFoundException;
     void fortify(String playerName, String fromTerritory, String toTerritory, int units) throws PlayerNotFoundException, TerritoryNotFoundException, GameplayException;
 
-//    GameState getGameState();
-    void start(ConsoleGame controller);
 }

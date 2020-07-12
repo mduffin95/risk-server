@@ -1,35 +1,31 @@
 package net.mjduffin.risk.adapters;
 
 import net.mjduffin.risk.usecase.*;
-import net.mjduffin.risk.usecase.request.AttackRequest;
-import net.mjduffin.risk.usecase.request.EndAttackRequest;
 import net.mjduffin.risk.usecase.request.Request;
 import net.mjduffin.risk.usecase.request.RequestAcceptor;
-import net.mjduffin.risk.view.RawInput;
+
+import java.util.Arrays;
 
 public class ConsoleManager implements PlayerOutput, ConsoleController {
     RequestAcceptor useCases;
-    String name;
     ConsoleView view;
 
-    public ConsoleManager(String name, RequestAcceptor useCases) {
-        this.name = name;
+    public ConsoleManager(RequestAcceptor useCases) {
         this.useCases = useCases;
         useCases.registerPlayerOutput(this);
     }
 
-    @Override
-    public void notifyTurn() {
-        System.out.println("Turn: " + name);
-    }
-
-    @Override
-    public String getPlayerName() {
-        return name;
-    }
-
     ConsoleViewModel convertToViewModel(GameState gameState) {
-        return null;
+        //Take game state from usecases and convert to view model specific to console output medium
+        ConsoleViewModel vm = new ConsoleViewModel();
+        vm.setCurrentPlayer(gameState.getCurrentPlayer());
+        vm.setPhase(gameState.getPhase());
+        vm.unitsToPlace = gameState.unitsToPlace;
+        vm.territories = Arrays.copyOf(gameState.territories, gameState.territories.length);
+        vm.occupyingPlayers = Arrays.copyOf(gameState.occupyingPlayers, gameState.occupyingPlayers.length);
+        vm.units = Arrays.copyOf(gameState.units, gameState.units.length);
+
+        return vm;
     }
 
     public void turn(GameState gameState) {
@@ -40,8 +36,14 @@ public class ConsoleManager implements PlayerOutput, ConsoleController {
     @Override
     public void request(ConsoleRequest request) {
         GameState gameState = useCases.getGameState();
-        Request r = ConsoleRequestConverter.convertRequest(request, name, gameState.getPhase());
+        //Get current player and phase and use to convert to a request
+        Request r = ConsoleRequestConverter.convertRequest(request, gameState.getCurrentPlayer(), gameState.getPhase());
         useCases.receiveRequest(r);
+    }
+
+    @Override
+    public void registerView(ConsoleView view) {
+        this.view = view;
     }
 
 

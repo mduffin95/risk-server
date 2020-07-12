@@ -11,12 +11,12 @@ import java.util.Map;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
-class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObserver, RequestAcceptor {
+public class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObserver, RequestAcceptor {
     private Game game;
     private DiceManager diceManager;
     private Map<Player, UnitStore> unitStores = new HashMap<>();
 
-    Map<String, PlayerOutput> outputMap = new HashMap<>();
+    PlayerOutput output;
     Territory lastAttackingTerritory;
     Territory lastDefendingTerritory;
 
@@ -31,7 +31,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
 
     @Override
     public void registerPlayerOutput(PlayerOutput output) {
-        outputMap.put(output.getPlayerName(), output);
+        this.output = output;
     }
 
     private boolean isPlayerTurn(Player player) {
@@ -267,8 +267,7 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         Player nextPlayer = game.getCurrentPlayer();
 
         //Notify controller for this player
-        PlayerOutput output = outputMap.get(nextPlayer.getName());
-        output.notifyTurn();
+//        output.notifyTurn();
     }
 
     private Player getPlayer(String playerName) throws PlayerNotFoundException {
@@ -287,9 +286,9 @@ class GameManager implements PlayerInput, StateChangeObserver, PlayerChangeObser
         return territory;
     }
 
-    public void start(ConsoleGame controller) {
+    public void start() {
         while (!getGameState().hasEnded()) {
-            controller.takeTurn(getGameState());
+            output.turn(getGameState());
         }
     }
 

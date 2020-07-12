@@ -16,4 +16,12 @@ public class ConsoleViewModel {
     public String getPhase() {
         return this.phase;
     }
+
+    public void setCurrentPlayer(String currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
+
+    public void setPhase(String phase) {
+        this.phase = phase;
+    }
 }

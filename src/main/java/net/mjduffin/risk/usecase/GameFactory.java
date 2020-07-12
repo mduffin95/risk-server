@@ -1,6 +1,7 @@
 package net.mjduffin.risk.usecase;
 
 import net.mjduffin.risk.entities.*;
+import net.mjduffin.risk.usecase.request.RequestAcceptor;
 
 public class GameFactory {
     private static String NORTH_AMERICA = "NorthAmerica";
@@ -10,7 +11,7 @@ public class GameFactory {
     private static String ASIA = "Asia";
     private static String AUSTRALASIA = "Australasia";
 
-    public static PlayerInput basicGame(String[] players) {
+    public static GameManager basicGame(String[] players) {
         GameBuilder gameBuilder = new GameBuilder();
         BoardBuilder boardBuilder = new BoardBuilder();
 

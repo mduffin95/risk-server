@@ -13,6 +13,9 @@ public class ConsoleViewImpl implements ConsoleView {
     public ConsoleViewImpl(RawInput input, ConsoleController controller) {
         this.rawInput = input;
         this.consoleController = controller;
+        //TODO: Register with controller
+
+        controller.registerView(this);
     }
 
     @Override

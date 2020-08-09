@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/risk.iml" filepath="$PROJECT_DIR$/risk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/risk-cli/risk-cli.iml" filepath="$PROJECT_DIR$/risk-cli/risk-cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/risk-lib/risk-lib.iml" filepath="$PROJECT_DIR$/risk-lib/risk-lib.iml" />
     </modules>
   </component>
 </project>

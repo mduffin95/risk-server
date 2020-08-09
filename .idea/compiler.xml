@@ -6,16 +6,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="risk" />
+        <module name="risk-lib" />
+        <module name="risk-cli" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="risk" target="1.8" />
+      <module name="risk-cli" target="1.8" />
+      <module name="risk-lib" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="risk" options="-parameters" />
+      <module name="risk-cli" options="-parameters" />
+      <module name="risk-lib" options="-parameters" />
     </option>
   </component>
 </project>

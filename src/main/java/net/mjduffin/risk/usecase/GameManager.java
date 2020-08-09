@@ -1,13 +1,13 @@
 package net.mjduffin.risk.usecase;
 
-import net.mjduffin.risk.ConsoleGame;
 import net.mjduffin.risk.entities.*;
-import net.mjduffin.risk.usecase.request.Request;
-import net.mjduffin.risk.usecase.request.RequestAcceptor;
+import net.mjduffin.risk.usecase.request.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static net.mjduffin.risk.entities.Game.State.*;
 
@@ -15,6 +15,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     private Game game;
     private DiceManager diceManager;
     private Map<Player, UnitStore> unitStores = new HashMap<>();
+    private BlockingQueue<Request> requestQueue = new LinkedBlockingQueue<>();
 
     PlayerOutput output;
     Territory lastAttackingTerritory;
@@ -233,7 +234,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
             //Remove units from 'from' and add to 'to'
             from.subtractUnits(units);
             to.addUnits(units);
-            endTurn(player);
+            endTurn();
         } else {
             throw new GameplayException("Territories not connected");
         }
@@ -261,13 +262,9 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         return territory.getPlayer() != null && territory.getPlayer().equals(player);
     }
 
-    void endTurn(Player player) {
+    void endTurn() {
         game.nextPlayer();
         game.nextState();
-        Player nextPlayer = game.getCurrentPlayer();
-
-        //Notify controller for this player
-//        output.notifyTurn();
     }
 
     private Player getPlayer(String playerName) throws PlayerNotFoundException {
@@ -286,14 +283,13 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         return territory;
     }
 
-    public void start() {
+    public void start() throws InterruptedException, GameplayException, PlayerNotFoundException, TerritoryNotFoundException {
         while (!getGameState().hasEnded()) {
             output.turn(getGameState());
+            //TODO: wait to pull request off queue
+            Request r = requestQueue.take();
+            processRequest(r);
         }
-    }
-
-    public void request(Request request) {
-        //Take request and work out what sort of move is being played
     }
 
     @Override
@@ -311,7 +307,41 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
 
     @Override
     public void receiveRequest(Request request) {
-        //Validate request
-        //Route requests to the relevant API functions
+        requestQueue.add(request);
+    }
+
+    //TODO: Could pass requests directly into methods
+    private void processRequest(Request request) throws GameplayException, TerritoryNotFoundException, PlayerNotFoundException {
+        Request.Type type = request.getRequestType();
+        switch (type) {
+            case DRAFT:
+                DraftRequest draftRequest = (DraftRequest) request;
+                draftSingle(draftRequest.getPlayer(), draftRequest.getTerritory(), draftRequest.getUnits());
+                break;
+            case ATTACK:
+                AttackRequest attackRequest = (AttackRequest) request;
+                attack(attackRequest.getPlayer(), attackRequest.getAttacker(), attackRequest.getDefender());
+                break;
+            case MOVE:
+                MoveRequest moveRequest = (MoveRequest) request;
+                move(moveRequest.getPlayerName(), moveRequest.getUnits());
+                break;
+            case ENDATTACK:
+                EndAttackRequest req = (EndAttackRequest) request;
+                endAttack(req.getPlayerName());
+                break;
+            case FORTIFY:
+                FortifyRequest fortifyRequest = (FortifyRequest) request;
+                fortify(
+                        fortifyRequest.getPlayerName(),
+                        fortifyRequest.getFromTerritory(),
+                        fortifyRequest.getToTerritory(),
+                        fortifyRequest.getUnits());
+                break;
+            case SKIPFORTIFY:
+                endTurn();
+        }
+
+
     }
 }

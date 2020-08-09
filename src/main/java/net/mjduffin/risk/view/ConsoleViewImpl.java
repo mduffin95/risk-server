@@ -4,11 +4,14 @@ import net.mjduffin.risk.adapters.ConsoleController;
 import net.mjduffin.risk.adapters.ConsoleRequest;
 import net.mjduffin.risk.adapters.ConsoleView;
 import net.mjduffin.risk.adapters.ConsoleViewModel;
-import net.mjduffin.risk.usecase.GameState;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ConsoleViewImpl implements ConsoleView {
     RawInput rawInput;
     ConsoleController consoleController;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public ConsoleViewImpl(RawInput input, ConsoleController controller) {
         this.rawInput = input;
@@ -16,6 +19,7 @@ public class ConsoleViewImpl implements ConsoleView {
         //TODO: Register with controller
 
         controller.registerView(this);
+        executor.execute(this::readInput);
     }
 
     @Override

@@ -1,8 +1,5 @@
 package net.mjduffin.risk.usecase.request;
 
-import net.mjduffin.risk.entities.Territory;
-import net.mjduffin.risk.usecase.AttackResult;
-
 public class AttackRequest extends Request {
     private String player;
     private String attacker;

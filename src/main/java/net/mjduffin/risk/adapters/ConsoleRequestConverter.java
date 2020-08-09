@@ -1,9 +1,5 @@
 package net.mjduffin.risk.adapters;
 
-import net.mjduffin.risk.usecase.GameState;
-import net.mjduffin.risk.usecase.GameplayException;
-import net.mjduffin.risk.usecase.PlayerNotFoundException;
-import net.mjduffin.risk.usecase.TerritoryNotFoundException;
 import net.mjduffin.risk.usecase.request.*;
 
 public class ConsoleRequestConverter {
@@ -27,7 +23,7 @@ public class ConsoleRequestConverter {
 //                    System.out.println("Units remaining: " + total);
             case "ATTACK":
                 if ("DONE".equals(args[0])) {
-                    return new EndAttackRequest();
+                    return new EndAttackRequest(player);
                 }
                 String attackTerritory = args[0];
                 String defendTerritory = args[1];
@@ -37,6 +33,9 @@ public class ConsoleRequestConverter {
                 System.out.println("MOVE PHASE");
                 return new MoveRequest(player, toMove);
             case "FORTIFY":
+                if ("SKIP".equals(args[0])) {
+                    return new SkipFortifyRequest();
+                }
                 String from = args[0];
                 String to = args[1];
                 int toFortify = Integer.parseInt(args[2]);

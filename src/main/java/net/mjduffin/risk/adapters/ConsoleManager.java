@@ -31,6 +31,8 @@ public class ConsoleManager implements PlayerOutput, ConsoleController {
     public void turn(GameState gameState) {
         ConsoleViewModel vm = convertToViewModel(gameState);
         view.display(vm);
+
+        //TODO: Wait for a response from the console
     }
 
     @Override

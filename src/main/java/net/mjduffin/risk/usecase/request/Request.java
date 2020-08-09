@@ -1,14 +1,13 @@
 package net.mjduffin.risk.usecase.request;
 
-import net.mjduffin.risk.entities.Game;
-
 public class Request {
     public enum Type {
         DRAFT,
         ATTACK,
         ENDATTACK,
         MOVE,
-        FORTIFY
+        FORTIFY,
+        SKIPFORTIFY
     }
 
     protected Type requestType;

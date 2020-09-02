@@ -45,7 +45,7 @@ class DraftTests {
     void draft() throws GameplayException {
         // given
         GameBuilder gameBuilder = simpleGameBuilderStarter();
-        Game game = gameBuilder.build();
+        Game game = gameBuilder.build(false);
         PlayerInput playerInput = getPlayerInputFromGame(game);
 
 
@@ -62,18 +62,16 @@ class DraftTests {
     void draftTwiceInRow() throws GameplayException {
         GameBuilder gameBuilder = simpleGameBuilderStarter();
         gameBuilder.addPlayer(ALICE);
-        Game game = gameBuilder.build();
+        Game game = gameBuilder.build(false);
         PlayerInput playerInput = getPlayerInputFromGame(game);
 
         Map<String, Integer> draft = new HashMap<>();
-        draft.put("England", 4);
+        draft.put("Wales", 4);
         playerInput.draft(BOB, draft);
         draft.clear();
-        draft.put("Wales", 1);
+        draft.put("England", 1);
         playerInput.draft(ALICE, draft);
         assertThrows(GameplayException.class, () -> playerInput.draft(BOB, draft));
-
-        //TODO: Check for error
 
     }
 

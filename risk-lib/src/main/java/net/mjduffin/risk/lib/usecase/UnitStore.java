@@ -1,6 +1,5 @@
 package net.mjduffin.risk.lib.usecase;
 
-import net.mjduffin.risk.lib.entities.Game;
 import net.mjduffin.risk.lib.entities.Player;
 
 import java.util.HashMap;

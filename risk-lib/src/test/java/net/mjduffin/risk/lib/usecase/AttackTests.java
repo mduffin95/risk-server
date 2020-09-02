@@ -3,7 +3,6 @@ package net.mjduffin.risk.lib.usecase;
 import net.mjduffin.risk.lib.entities.Board;
 import net.mjduffin.risk.lib.entities.DiceManager;
 import net.mjduffin.risk.lib.entities.DieThrow;
-import net.mjduffin.risk.lib.entities.Game;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -14,8 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 public class AttackTests {
-//    Game game;
-//    PlayerInput playerInput;
     String PLAYER_A = "PlayerA";
     String PLAYER_B = "PlayerB";
 
@@ -32,8 +29,7 @@ public class AttackTests {
                 .addPlayer(PLAYER_B)
                 .board(board);
 
-        //TODO: Make this not random
-        Game game = gameBuilder.build();
+        Game game = gameBuilder.build(false);
 
         DiceManager diceManager = new DiceManager(dieThrow);
         PlayerInput playerInput = new GameManager(game, diceManager);
@@ -61,8 +57,6 @@ public class AttackTests {
         playerInput.draft(PLAYER_B, draft);
 
         AttackResult result = playerInput.attack(PLAYER_A, "England", "Wales");
-//        System.out.println(result.attackUnits);
-//        System.out.println(result.defendUnits);
 
         assertEquals(4, result.attackUnits);
         assertEquals(0, result.defendUnits);

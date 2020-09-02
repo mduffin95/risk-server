@@ -5,8 +5,9 @@ public class Territory {
     private Player player;
     private int units;
 
-    public Territory(String name) {
+    public Territory(String name, Player player) {
         this.name = name;
+        this.player = player;
         this.units = 1;
     }
 

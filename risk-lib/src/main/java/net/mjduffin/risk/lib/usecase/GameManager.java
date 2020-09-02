@@ -66,7 +66,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         if (territory.getPlayer().equals(player)) {
             territory.addUnits(units);
         } else {
-            throw new GameplayException("Wrong player");
+            throw new GameplayException("Cannot add units to territory as it is not owned by the player");
         }
     }
 

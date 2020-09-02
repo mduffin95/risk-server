@@ -1,7 +1,6 @@
 package net.mjduffin.risk.lib.usecase;
 
 import net.mjduffin.risk.lib.entities.Board;
-import net.mjduffin.risk.lib.entities.Game;
 import net.mjduffin.risk.lib.entities.Player;
 
 import java.util.ArrayList;
@@ -29,8 +28,8 @@ public class GameBuilder {
         return this;
     }
 
-    public Game build() {
-        board.initialiseWithPlayers(players);
+    public Game build(boolean shuffle) {
+//        board.initialiseWithPlayers(players, shuffle); // Do this when adding territories
         return new Game(board, players, new Random(seed));
     }
 }

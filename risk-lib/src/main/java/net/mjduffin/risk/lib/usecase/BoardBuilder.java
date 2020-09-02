@@ -1,6 +1,5 @@
 package net.mjduffin.risk.lib.usecase;
 
-import net.mjduffin.risk.lib.entities.Board;
 import net.mjduffin.risk.lib.entities.Territory;
 
 import java.util.ArrayList;

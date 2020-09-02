@@ -2,6 +2,9 @@ package net.mjduffin.risk.lib.usecase;
 
 import net.mjduffin.risk.lib.entities.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameFactory {
     private static String NORTH_AMERICA = "NorthAmerica";
     private static String SOUTH_AMERICA = "SouthAmerica";
@@ -11,18 +14,21 @@ public class GameFactory {
     private static String AUSTRALASIA = "Australasia";
 
     public static GameManager basicGame(String[] players) {
-        GameBuilder gameBuilder = new GameBuilder();
-        BoardBuilder boardBuilder = new BoardBuilder();
+        Game.Builder gameBuilder = new Game.Builder();
 
+        List<String> terr1 = new ArrayList<>();
+        terr1.add(NORTH_AMERICA);
+        terr1.add(SOUTH_AMERICA);
+        terr1.add(EUROPE);
+        List<String> terr2 = new ArrayList<>();
+        terr2.add(AFRICA);
+        terr2.add(ASIA);
+        terr2.add(AUSTRALASIA);
 
-        boardBuilder.addTerritory(NORTH_AMERICA)
-                .addTerritory(SOUTH_AMERICA)
-                .addTerritory(EUROPE)
-                .addTerritory(AFRICA)
-                .addTerritory(ASIA)
-                .addTerritory(AUSTRALASIA);
+        gameBuilder.addPlayerWithTerritories("Alice", terr1);
+        gameBuilder.addPlayerWithTerritories("Bob", terr2);
 
-        boardBuilder.addEdge(NORTH_AMERICA, SOUTH_AMERICA)
+        gameBuilder.addEdge(NORTH_AMERICA, SOUTH_AMERICA)
                 .addEdge(NORTH_AMERICA, EUROPE)
                 .addEdge(NORTH_AMERICA, ASIA)
                 .addEdge(SOUTH_AMERICA, AFRICA)
@@ -30,16 +36,8 @@ public class GameFactory {
                 .addEdge(EUROPE, ASIA)
                 .addEdge(ASIA, AUSTRALASIA);
 
-        Board board = boardBuilder.build();
-
-        for (int i=0; i<players.length; i++) {
-            gameBuilder.addPlayer(players[i]);
-        }
-
-        gameBuilder.board(board);
-        gameBuilder.seed(1234);
-
         Game game = gameBuilder.build();
+
         DieThrow dieThrow = new RandomDieThrow();
         DiceManager diceManager = new DiceManager(dieThrow);
         GameManager gameManager = new GameManager(game, diceManager);

@@ -3,9 +3,11 @@ package net.mjduffin.risk.lib.usecase;
 import net.mjduffin.risk.lib.entities.Board;
 import net.mjduffin.risk.lib.entities.DiceManager;
 import net.mjduffin.risk.lib.entities.DieThrow;
+import net.mjduffin.risk.lib.entities.Game;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,30 +19,17 @@ public class AttackTests {
     String PLAYER_B = "PlayerB";
 
     PlayerInput createTwoPlayerGame(DieThrow dieThrow) {
-        BoardBuilder boardBuilder = new BoardBuilder();
-        boardBuilder.addTerritory("England")
-                .addTerritory("Wales")
-                .addEdge("England", "Wales");
 
-        Board board = boardBuilder.build();
+        Game.Builder gameBuilder = new Game.Builder();
+        gameBuilder.addPlayerWithTerritories(PLAYER_A, Collections.singletonList("England"));
+        gameBuilder.addPlayerWithTerritories(PLAYER_B, Collections.singletonList("Wales"));
 
-        GameBuilder gameBuilder = new GameBuilder();
-        gameBuilder.addPlayer(PLAYER_A)
-                .addPlayer(PLAYER_B)
-                .board(board);
-
-        Game game = gameBuilder.build(false);
+        Game game = gameBuilder.build();
 
         DiceManager diceManager = new DiceManager(dieThrow);
-        PlayerInput playerInput = new GameManager(game, diceManager);
 
-        return playerInput;
+        return new GameManager(game, diceManager);
     }
-
-//    @BeforeEach
-//    void setUp() {
-//
-//    }
 
     @Test
     void attack() throws TerritoryNotFoundException, PlayerNotFoundException, GameplayException {

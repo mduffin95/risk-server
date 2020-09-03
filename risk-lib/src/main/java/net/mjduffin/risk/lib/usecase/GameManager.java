@@ -63,7 +63,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     }
 
     private void addUnitsToTerritory(Territory territory, Player player, int units) throws GameplayException {
-        if (territory.getPlayer().equals(player)) {
+        if (territory.player.equals(player)) {
             territory.addUnits(units);
         } else {
             throw new GameplayException("Cannot add units to territory as it is not owned by the player");
@@ -155,7 +155,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
 
         if (result.defendUnits == 0) {
             //Attacker won, set new territory owner and transition to MOVE phase
-            defender.setPlayer(player, 0);
+            defender.player = player;
             game.nextState();
         }
 
@@ -202,7 +202,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     @Override
     public void move(String playerName, int units) throws PlayerNotFoundException {
         Player p = getPlayer(playerName);
-        if (lastAttackingTerritory.getPlayer().equals(p)) {
+        if (lastAttackingTerritory.player.equals(p)) {
             lastAttackingTerritory.subtractUnits(units);
             lastDefendingTerritory.addUnits(units);
         }
@@ -252,14 +252,14 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         for (int i = 0; i < sz; i++) {
             Territory t = territories.get(i);
             gameState.territories[i] = t.getName();
-            gameState.occupyingPlayers[i] = t.getPlayer().getName();
+            gameState.occupyingPlayers[i] = t.player.getName();
             gameState.units[i] = t.getUnits();
         }
         return gameState;
     }
 
     private boolean areSamePlayer(Player player, Territory territory) {
-        return territory.getPlayer() != null && territory.getPlayer().equals(player);
+        return territory.player != null && territory.player.equals(player);
     }
 
     void endTurn() {

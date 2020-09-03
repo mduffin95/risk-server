@@ -4,8 +4,7 @@ import net.mjduffin.risk.lib.entities.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,25 +13,6 @@ import static org.mockito.Mockito.when;
 class DraftTests {
     private final String BOB = "Bob";
     private final String ALICE = "Alice";
-
-
-    private Board simpleBoard() {
-        BoardBuilder boardBuilder = new BoardBuilder();
-        boardBuilder.addTerritory("England")
-                .addTerritory("Wales");
-        boardBuilder.addEdge("England", "Wales");
-
-        return boardBuilder.build();
-    }
-
-    private GameBuilder simpleGameBuilderStarter() {
-        Board board = simpleBoard();
-        GameBuilder gameBuilder = new GameBuilder();
-
-        gameBuilder.board(board);
-        gameBuilder.addPlayer(BOB);
-        return gameBuilder;
-    }
 
     PlayerInput getPlayerInputFromGame(Game game) {
         DieThrow dieThrow = Mockito.mock(DieThrow.class);
@@ -44,11 +24,14 @@ class DraftTests {
     @Test
     void draft() throws GameplayException {
         // given
-        GameBuilder gameBuilder = simpleGameBuilderStarter();
-        Game game = gameBuilder.build(false);
+        Game.Builder gameBuilder = new Game.Builder();
+
+        gameBuilder.addPlayerWithTerritories(BOB, Arrays.asList("England", "Wales"));
+        Game game = gameBuilder.build();
+
         PlayerInput playerInput = getPlayerInputFromGame(game);
 
-
+        // when
         Map<String, Integer> draft = new HashMap<>();
         draft.put("England", 1);
         draft.put("Wales", 3);
@@ -60,9 +43,14 @@ class DraftTests {
 
     @Test
     void draftTwiceInRow() throws GameplayException {
-        GameBuilder gameBuilder = simpleGameBuilderStarter();
-        gameBuilder.addPlayer(ALICE);
-        Game game = gameBuilder.build(false);
+        // given
+        Game.Builder gameBuilder = new Game.Builder();
+
+        // TODO: This is currently dependent on the order
+        gameBuilder.addPlayerWithTerritories(BOB, Collections.singletonList("Wales"));
+        gameBuilder.addPlayerWithTerritories(ALICE, Collections.singletonList("England"));
+        Game game = gameBuilder.build();
+
         PlayerInput playerInput = getPlayerInputFromGame(game);
 
         Map<String, Integer> draft = new HashMap<>();

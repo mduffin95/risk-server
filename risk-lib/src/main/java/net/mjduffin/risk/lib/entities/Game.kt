@@ -1,7 +1,5 @@
 package net.mjduffin.risk.lib.entities
 
-import net.mjduffin.risk.lib.usecase.BoardBuilder
-import java.util.*
 import java.util.function.Consumer
 import kotlin.collections.HashSet
 
@@ -16,9 +14,12 @@ class Game(
             private var players: MutableList<Player> = mutableListOf()
     ) {
 
+        // add player and territories at the same time, therefore assigning a player to each territory
         fun addPlayerWithTerritories(playerName: String, territoryNames: List<String>) = apply {
             val player = Player(playerName)
             val territories = territoryNames.map { Territory(it, player) }
+
+            // add territories to board
             boardBuilder.addTerritories(territories)
             this.players.add(player)
         }

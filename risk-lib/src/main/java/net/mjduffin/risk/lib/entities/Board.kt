@@ -12,14 +12,18 @@ class Board private constructor(builder: Board.Builder) {
 
     data class Builder(
             val territories: MutableList<Territory> = mutableListOf(),
-            val adjTerritories: MutableMap<String, MutableList<String>> = mutableMapOf()
+            val adjTerritories: MutableMap<Territory, List<Territory>> = mutableMapOf()
     ) {
+        private fun findTerritory(name: String): Territory {
+            return territories.first { it.name == name }
+        }
 
         fun addTerritories(territories: List<Territory>) = apply { this.territories.addAll(territories) }
 
         fun addEdge(from: String, to: String) = apply {
-            val edges = this.adjTerritories.getOrDefault(from, mutableListOf())
-            edges.add(to)
+            val fromTerritory = findTerritory(from)
+            val edges = this.adjTerritories.getOrDefault(fromTerritory, listOf())
+            this.adjTerritories[fromTerritory] = edges + findTerritory(to)
         }
 
         fun build() = Board(this)
@@ -34,18 +38,5 @@ class Board private constructor(builder: Board.Builder) {
     fun areConnected(a: Territory, b: Territory): Boolean = true
 
     fun getTerritory(name: String): Territory? = territories.first { it.name == name }
-
-//    fun initialiseWithPlayers(players: List<Player?>, shuffle: Boolean) {
-//        val allTerritories: List<Territory?> = ArrayList(territories.values)
-//        if (shuffle) {
-//            Collections.shuffle(allTerritories)
-//        }
-//        var i = 0
-//        for (t in allTerritories) {
-//            val p = players[i]
-//            t!!.init(p)
-//            i = (i + 1) % players.size
-//        }
-//    }
 
 }

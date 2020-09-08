@@ -1,5 +1,7 @@
 package net.mjduffin.risk.cli.adapters;
 
+import net.mjduffin.risk.lib.usecase.request.*;
+
 public class ConsoleRequestConverter {
     public static Request convertRequest(ConsoleRequest consoleRequest, String player, String phase) {
 
@@ -10,15 +12,7 @@ public class ConsoleRequestConverter {
             case "ALLDRAFT":
                 String territory = args[0];
                 int num = Integer.parseInt(args[1]);
-//                    if (num <= total) {
-//                        total -= num;
-//                    } else {
-//                        throw new GameplayException("Not enough units");
-//                    }
                 return new DraftRequest(player, territory, num);
-
-//                    useCases.draftSingle(name, territory, num);
-//                    System.out.println("Units remaining: " + total);
             case "ATTACK":
                 if ("DONE".equals(args[0])) {
                     return new EndAttackRequest(player);

@@ -1,5 +1,7 @@
 package net.mjduffin.risk.cli.adapters;
 
+import net.mjduffin.risk.lib.usecase.GameState;
+import net.mjduffin.risk.lib.usecase.PlayerOutput;
 import net.mjduffin.risk.lib.usecase.request.Request;
 import net.mjduffin.risk.lib.usecase.request.RequestAcceptor;
 

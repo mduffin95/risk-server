@@ -19,6 +19,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
 
     PlayerOutput output;
     Territory lastAttackingTerritory;
+    private int lastAttackingUnitCount;
     Territory lastDefendingTerritory;
 
     GameManager(Game game, DiceManager diceManager) {
@@ -176,6 +177,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         try {
             while (attackUnits > 0 && defendUnits > 0) {
                 int toAttack = Math.min(attackUnits, 3);
+                lastAttackingUnitCount = toAttack;
                 int toDefend = Math.min(defendUnits, 2);
                 attackUnits -= toAttack;
                 defendUnits -= toDefend;
@@ -200,11 +202,18 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     }
 
     @Override
-    public void move(String playerName, int units) throws PlayerNotFoundException {
+    public void move(String playerName, int units) throws PlayerNotFoundException, GameplayException {
         Player p = getPlayer(playerName);
+
+        if (units < lastAttackingUnitCount) {
+            throw new GameplayException(String.format("Move count must be >= {}", lastAttackingUnitCount));
+        }
+
         if (lastAttackingTerritory.player.equals(p)) {
             lastAttackingTerritory.subtractUnits(units);
             lastDefendingTerritory.addUnits(units);
+        } else {
+            throw new GameplayException("Players are not the same");
         }
 
         game.nextState();
@@ -283,12 +292,16 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
         return territory;
     }
 
-    public void start() throws InterruptedException, GameplayException, PlayerNotFoundException, TerritoryNotFoundException {
+    public void start() throws InterruptedException, PlayerNotFoundException, TerritoryNotFoundException {
         while (!getGameState().hasEnded()) {
             output.turn(getGameState());
             //TODO: wait to pull request off queue
             Request r = requestQueue.take();
-            processRequest(r);
+            try {
+                processRequest(r);
+            } catch (GameplayException e) {
+                System.err.println(e.getMessage());
+            }
         }
     }
 

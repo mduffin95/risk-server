@@ -3,6 +3,7 @@ package net.mjduffin.risk.cli;
 import net.mjduffin.risk.cli.adapters.ConsoleManager;
 import net.mjduffin.risk.cli.view.ConsoleInput;
 import net.mjduffin.risk.cli.view.ConsoleViewImpl;
+import net.mjduffin.risk.lib.usecase.*;
 
 public class ConsoleGame {
 
@@ -18,7 +19,7 @@ public class ConsoleGame {
 
         try {
             manager.start();
-        } catch (InterruptedException | GameplayException | PlayerNotFoundException | TerritoryNotFoundException e) {
+        } catch (InterruptedException | PlayerNotFoundException | TerritoryNotFoundException e) {
             e.printStackTrace();
         }
     }

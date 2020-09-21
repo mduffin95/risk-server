@@ -25,7 +25,7 @@ public class ConsoleRequestConverter {
                 System.out.println("MOVE PHASE");
                 return new MoveRequest(player, toMove);
             case "FORTIFY":
-                if ("SKIP".equals(args[0])) {
+                if ("DONE".equals(args[0])) {
                     return new SkipFortifyRequest();
                 }
                 String from = args[0];

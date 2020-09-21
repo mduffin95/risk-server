@@ -264,6 +264,8 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
             gameState.occupyingPlayers[i] = t.player.getName();
             gameState.units[i] = t.getUnits();
         }
+        // if distinct players is <= 1 then game has ended
+        gameState.hasEnded = territories.stream().map(Territory::component2).distinct().count() <= 1;
         return gameState;
     }
 
@@ -293,8 +295,9 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     }
 
     public void start() throws InterruptedException, PlayerNotFoundException, TerritoryNotFoundException {
-        while (!getGameState().hasEnded()) {
-            output.turn(getGameState());
+        GameState gameState = getGameState();
+        while (!gameState.hasEnded) {
+            output.turn(gameState);
             //TODO: wait to pull request off queue
             Request r = requestQueue.take();
             try {
@@ -302,7 +305,9 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
             } catch (GameplayException e) {
                 System.err.println(e.getMessage());
             }
+            gameState = getGameState();
         }
+        System.out.printf("Game has ended, %s has won!", gameState.occupyingPlayers[0]);
     }
 
     @Override

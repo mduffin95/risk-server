@@ -7,6 +7,7 @@ public class GameState {
     public String[] territories;
     public String[] occupyingPlayers;
     public Integer[] units;
+    public boolean hasEnded;
 
     GameState(String currentPlayer, String phase) {
         this.currentPlayer = currentPlayer;
@@ -15,10 +16,6 @@ public class GameState {
 
     public String getCurrentPlayer() {
         return currentPlayer;
-    }
-
-    public boolean hasEnded() {
-        return false;
     }
 
     public String getPhase() {

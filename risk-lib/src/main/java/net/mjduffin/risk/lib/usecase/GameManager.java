@@ -28,7 +28,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
 
         game.registerPlayerChangeObserver(this);
         game.registerStateChangeObserver(this);
-        game.getCurrentPlayer().calulateAndSetDraftableUnits(game.getState());
+
     }
 
     @Override
@@ -51,7 +51,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
 
     private void draftUnits(Territory territory, Player player, int units) throws GameplayException {
 
-        int remaining = player.getDraftableUnits();
+        int remaining = game.calculateDraftableUnits(player.getId());
 
         if (remaining > 0 && units <= remaining) {
             addUnitsToTerritory(territory, player, units);
@@ -64,8 +64,9 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
     }
 
     private void addUnitsToTerritory(Territory territory, Player player, int units) throws GameplayException {
-        if (territory.player.equals(player)) {
-            territory.addUnits(units);
+        PlayerId check = game.getPlayerForTerritory(territory.getId());
+        if (check != null && check.equals(player.getId())) {
+            game.
         } else {
             throw new GameplayException("Cannot add units to territory as it is not owned by the player");
         }
@@ -86,7 +87,7 @@ public class GameManager implements PlayerInput, StateChangeObserver, PlayerChan
             Integer units = e.getValue();
 
             if (units != null) {
-                Territory t = game.getBoard().getTerritory(territoryName);
+                Territory t = game.getBoard().getTerritories().get(new TerritoryId(territoryName));
                 draftUnits(t, player, units);
             }
 

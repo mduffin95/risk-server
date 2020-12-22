@@ -2,41 +2,33 @@ package net.mjduffin.risk.lib.entities
 
 class Board private constructor(builder: Board.Builder) {
 
-    val territories: List<Territory>
-    val adjTerritories: Map<Territory, List<Territory>>
-
-    init {
-        territories = builder.territories
-        adjTerritories = builder.adjTerritories
-    }
+    val territories: Map<TerritoryId, Territory> = builder.territories
+    private val adjTerritories: Map<TerritoryId, List<TerritoryId>> = builder.adjTerritories
 
     data class Builder(
-            val territories: MutableList<Territory> = mutableListOf(),
-            val adjTerritories: MutableMap<Territory, List<Territory>> = mutableMapOf()
+            val territories: MutableMap<TerritoryId, Territory> = mutableMapOf(),
+            val adjTerritories: MutableMap<TerritoryId, List<TerritoryId>> = mutableMapOf()
     ) {
-        private fun findTerritory(name: String): Territory {
-            return territories.first { it.name == name }
-        }
 
-        fun addTerritories(territories: List<Territory>) = apply { this.territories.addAll(territories) }
+        fun addTerritories(territories: List<Territory>) = apply { this.territories.putAll(territories.map { it.getId() to it }.toMap()) }
 
-        fun addEdge(from: String, to: String) = apply {
-            val fromTerritory = findTerritory(from)
-            val edges = this.adjTerritories.getOrDefault(fromTerritory, listOf())
-            this.adjTerritories[fromTerritory] = edges + findTerritory(to)
+        fun addEdge(from: TerritoryId, to: TerritoryId) = apply {
+            val fromTerritory = territories[from] ?: throw IllegalArgumentException("TerritoryId does not exist: $from")
+            val edges = this.adjTerritories.getOrDefault(fromTerritory.getId(), listOf())
+            this.adjTerritories[from] = edges + to
         }
 
         fun build() = Board(this)
     }
 
-    fun areAdjacent(a: Territory, b: Territory): Boolean {
+    fun areAdjacent(a: TerritoryId, b: TerritoryId): Boolean {
         val adjacent = adjTerritories[a] ?: return false
         return adjacent.contains(b)
     }
 
     //TODO: Use BFS to check if two territories are connected
-    fun areConnected(a: Territory, b: Territory): Boolean = true
+    fun areConnected(a: TerritoryId, b: TerritoryId): Boolean = true
 
-    fun getTerritory(name: String): Territory? = territories.first { it.name == name }
+//    fun getTerritory(name: String): Territory? = territories[TerritoryId(name)]
 
 }

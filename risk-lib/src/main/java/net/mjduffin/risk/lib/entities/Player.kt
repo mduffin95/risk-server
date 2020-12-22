@@ -1,35 +1,20 @@
 package net.mjduffin.risk.lib.entities
 
+data class PlayerId(val name: String)
+
 data class Player(val name: String) {
 
-    private val territories: MutableSet<Territory> = HashSet()
     var draftableUnits = 0
         private set
 
-    fun addTerritory(t: Territory) {
-        territories.add(t)
-    }
+    fun getId(): PlayerId = PlayerId(name)
 
-    fun removeTerritory(t: Territory) {
-        territories.remove(t)
-    }
+//    val totalUnits: Int
+//        get() = territories.stream().map(Territory::units).reduce(0) { a: Int, b: Int -> Integer.sum(a, b) }
+//    val totalTerritories: Int
+//        get() = territories.size
 
-    val totalUnits: Int
-        get() = territories.stream().map(Territory::units).reduce(0) { a: Int, b: Int -> Integer.sum(a, b) }
-    val totalTerritories: Int
-        get() = territories.size
 
-    fun calulateAndSetDraftableUnits(state: Game.State) {
-        if (Game.State.ALLDRAFT == state) {
-            draftableUnits = 10
-        } else {
-            var territoryBonus = totalTerritories / 3
-            if (territoryBonus < 3) {
-                territoryBonus = 3
-            }
-            draftableUnits = territoryBonus
-        }
-    }
 
     fun useUnits(units: Int) {
         draftableUnits -= units
@@ -40,12 +25,12 @@ data class Player(val name: String) {
     fun finishedDrafting(): Boolean = draftableUnits == 0
 
     //Assume units is within our draft limit
-    fun draft(territory: Territory, units: Int): Boolean {
-        if (territories.contains(territory)) {
-            territory.addUnits(units)
-            return true
-        }
-        return false
-    }
+//    fun draft(territory: Territory, units: Int): Boolean {
+//        if (territories.contains(territory)) {
+//            territory.addUnits(units)
+//            return true
+//        }
+//        return false
+//    }
 
 }

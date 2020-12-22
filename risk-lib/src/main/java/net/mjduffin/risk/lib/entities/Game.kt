@@ -4,20 +4,23 @@ import java.util.function.Consumer
 import kotlin.collections.HashSet
 
 //Assume game is in draft mode as soon as it is created
-class Game(
+class Game private constructor(
     val board: Board,
-    val players: List<Player>
+    private val players: List<Player>,
+    private val playerTerritories: Map<PlayerId, List<TerritoryId>>
 ) {
 
     data class Builder(
-            private var boardBuilder: Board.Builder = Board.Builder(),
-            private var players: MutableList<Player> = mutableListOf()
+        private var boardBuilder: Board.Builder = Board.Builder(),
+        private var players: MutableList<Player> = mutableListOf(),
+        private var playerTerritories: MutableMap<PlayerId, List<TerritoryId>> = mutableMapOf()
     ) {
 
         // add player and territories at the same time, therefore assigning a player to each territory
         fun addPlayerWithTerritories(playerName: String, territoryNames: List<String>) = apply {
             val player = Player(playerName)
-            val territories = territoryNames.map { Territory(it, player) }
+            val territories = territoryNames.map { Territory(it) }
+            playerTerritories[player.getId()] = territories.map { it.getId() }
 
             // add territories to board
             boardBuilder.addTerritories(territories)
@@ -25,12 +28,12 @@ class Game(
         }
 
         fun addEdge(from: String, to: String) = apply {
-            this.boardBuilder.addEdge(from, to)
+            this.boardBuilder.addEdge(TerritoryId(from), TerritoryId(to))
         }
 
         fun build(): Game {
             val board = boardBuilder.build()
-            return Game(board, players)
+            return Game(board, players, playerTerritories)
         }
     }
 
@@ -79,11 +82,12 @@ class Game(
         val oldPlayer = currentPlayer
         playerIndex = (playerIndex + 1) % players.size
         val newPlayer = currentPlayer
-        playerChangeObservers.forEach(Consumer { x: PlayerChangeObserver -> x.notify(oldPlayer, newPlayer) })
+        playerChangeObservers.forEach { observer -> observer.notify(oldPlayer, newPlayer) }
     }
 
-    val currentPlayer: Player
-        get() = players[playerIndex]
+    val currentPlayer: PlayerId
+        get() = players[playerIndex].getId()
+
     val isFirstPlayer: Boolean
         get() = playerIndex == 0
 
@@ -114,4 +118,25 @@ class Game(
     fun registerStateChangeObserver(observer: StateChangeObserver) {
         stateChangeObservers.add(observer)
     }
+
+    fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
+
+    fun calculateDraftableUnits(playerId: PlayerId): Int {
+        currentPlayer
+
+        return if (State.ALLDRAFT == state) {
+            10
+        } else {
+            var territoryBonus = totalTerritories(playerId) / 3
+            if (territoryBonus < 3) {
+                territoryBonus = 3
+            }
+            territoryBonus
+        }
+    }
+
+    private fun territoryToPlayerMap() =
+        playerTerritories.entries.flatMap { entry -> entry.value.map { it to entry.key } }.toMap()
+
+    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId? = territoryToPlayerMap()[territoryId]
 }

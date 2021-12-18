@@ -1,13 +1,19 @@
 package net.mjduffin.risk.lib.entities
 
+import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
+import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
 import java.util.function.Consumer
 import kotlin.collections.HashSet
 
 //Assume game is in draft mode as soon as it is created
+// immutable
 class Game private constructor(
     val board: Board,
     private val players: List<Player>,
-    private val playerTerritories: Map<PlayerId, List<TerritoryId>>
+    private val playerTerritories: Map<PlayerId, List<TerritoryId>>,
+    private val territoryUnits: Map<TerritoryId, Int>,
+    private val playerIndex: Int = 0,
+    val state: State = State.ALLDRAFT
 ) {
 
     data class Builder(
@@ -33,7 +39,8 @@ class Game private constructor(
 
         fun build(): Game {
             val board = boardBuilder.build()
-            return Game(board, players, playerTerritories)
+            val units = board.territories.map { it.key to 1 }.toMap()
+            return Game(board, players.toList(), playerTerritories.toMap(), units)
         }
     }
 
@@ -72,17 +79,9 @@ class Game private constructor(
         abstract fun nextState(): State
     }
 
-    var playerIndex = 0
-    var state = State.ALLDRAFT
-    var playerChangeObservers: MutableSet<PlayerChangeObserver> = HashSet()
-    var stateChangeObservers: MutableSet<StateChangeObserver> = HashSet()
-
-    //Return true if we have reached the end of a cycle
-    fun nextPlayer() {
-        val oldPlayer = currentPlayer
-        playerIndex = (playerIndex + 1) % players.size
-        val newPlayer = currentPlayer
-        playerChangeObservers.forEach { observer -> observer.notify(oldPlayer, newPlayer) }
+    fun nextPlayer(): Game {
+        val newIndex = (playerIndex + 1) % players.size
+        return Game(board, players, playerTerritories, territoryUnits, newIndex, state)
     }
 
     val currentPlayer: PlayerId
@@ -91,35 +90,26 @@ class Game private constructor(
     val isFirstPlayer: Boolean
         get() = playerIndex == 0
 
-    fun getPlayer(name: String): Player? {
+    fun getPlayer(name: String): Player {
         for (p in players) {
             if (p.name == name) {
                 return p
             }
         }
-        return null
+        throw PlayerNotFoundException()
     }
 
-    fun nextState() {
-        val oldState = state
-        state = state.nextState()
-        val newState = state
-        stateChangeObservers.forEach(Consumer { x: StateChangeObserver -> x.notify(oldState, newState) })
+    fun nextState(): Game {
+        return Game(board, players, playerTerritories, territoryUnits, playerIndex, state.nextState())
     }
 
     fun getNumPlayers(): Int {
         return players.size
     }
 
-    fun registerPlayerChangeObserver(observer: PlayerChangeObserver) {
-        playerChangeObservers.add(observer)
-    }
-
-    fun registerStateChangeObserver(observer: StateChangeObserver) {
-        stateChangeObservers.add(observer)
-    }
-
     fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
+
+    fun currentDraftableUnits(): Int = calculateDraftableUnits(currentPlayer)
 
     fun calculateDraftableUnits(playerId: PlayerId): Int {
         currentPlayer
@@ -139,4 +129,19 @@ class Game private constructor(
         playerTerritories.entries.flatMap { entry -> entry.value.map { it to entry.key } }.toMap()
 
     fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId? = territoryToPlayerMap()[territoryId]
+
+    // Unit operations
+    fun getUnits(territoryId: TerritoryId): Int = territoryUnits[territoryId] ?: throw TerritoryNotFoundException()
+
+    fun getAvailableUnits(territoryId: TerritoryId): Int = getUnits(territoryId) - 1
+
+    fun moveUnits(from: TerritoryId, to: TerritoryId, units: Int): Game {
+        return addUnits(from, -units).addUnits(to, units)
+    }
+
+    fun addUnits(territory: TerritoryId, units: Int): Game {
+        val newUnits = territoryUnits.toMutableMap()
+        newUnits[territory] = newUnits[territory]!! + units
+        return Game(board, players, playerTerritories, newUnits.toMap(), playerIndex, state)
+    }
 }

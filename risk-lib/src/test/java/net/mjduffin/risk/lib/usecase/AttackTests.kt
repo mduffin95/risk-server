@@ -1,24 +1,11 @@
 package net.mjduffin.risk.lib.usecase
 
-import net.mjduffin.risk.lib.entities.DieThrow.dieValue
-import net.mjduffin.risk.lib.entities.Game.Builder.addPlayerWithTerritories
-import net.mjduffin.risk.lib.entities.Game.Builder.build
-import net.mjduffin.risk.lib.usecase.PlayerInput.draft
-import net.mjduffin.risk.lib.entities.Game.board
-import net.mjduffin.risk.lib.usecase.PlayerInput.attack
-import net.mjduffin.risk.lib.entities.Game
-import net.mjduffin.risk.lib.usecase.PlayerInput
-import net.mjduffin.risk.lib.entities.DieThrow
-import org.mockito.Mockito
 import net.mjduffin.risk.lib.entities.DiceManager
-import net.mjduffin.risk.lib.usecase.GameManager
-import net.mjduffin.risk.lib.usecase.GameplayException
-import java.util.HashMap
-import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
-import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
-import net.mjduffin.risk.lib.usecase.AttackResult
+import net.mjduffin.risk.lib.entities.DieThrow
+import net.mjduffin.risk.lib.entities.Game
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 class AttackTests {
     var PLAYER_A = "PlayerA"
@@ -35,7 +22,7 @@ class AttackTests {
     @Test
     @Throws(TerritoryNotFoundException::class, PlayerNotFoundException::class, GameplayException::class)
     fun attack() {
-        var draft: MutableMap<String?, Int?> = HashMap()
+        var draft: MutableMap<String, Int> = HashMap()
         draft["England"] = 3
         //        draft.put("Wales", 3);
         val dieThrow = Mockito.mock(DieThrow::class.java)
@@ -53,7 +40,7 @@ class AttackTests {
     @Test
     @Throws(TerritoryNotFoundException::class, PlayerNotFoundException::class, GameplayException::class)
     fun attackDefenderWins() {
-        var draft: MutableMap<String?, Int?> = HashMap()
+        var draft: MutableMap<String, Int> = HashMap()
         draft["England"] = 3
         val dieThrow = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dieThrow.dieValue).thenReturn(1).thenReturn(2).thenReturn(3).thenReturn(3).thenReturn(3)

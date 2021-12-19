@@ -2,6 +2,7 @@ package net.mjduffin.risk.lib.entities
 
 import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
 import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
+import java.awt.datatransfer.ClipboardOwner
 import java.util.function.Consumer
 import kotlin.collections.HashSet
 
@@ -25,11 +26,10 @@ class Game private constructor(
         // add player and territories at the same time, therefore assigning a player to each territory
         fun addPlayerWithTerritories(playerName: String, territoryNames: List<String>) = apply {
             val player = Player(playerName)
-            val territories = territoryNames.map { Territory(it) }
-            playerTerritories[player.getId()] = territories.map { it.getId() }
+            val territories = territoryNames.map { TerritoryId(it) }
+            playerTerritories[player.getId()] = territories
 
             // add territories to board
-            boardBuilder.addTerritories(territories)
             this.players.add(player)
         }
 
@@ -39,7 +39,7 @@ class Game private constructor(
 
         fun build(): Game {
             val board = boardBuilder.build()
-            val units = board.territories.map { it.key to 1 }.toMap()
+            val units = board.allTerritories().map { it to 1 }.toMap()
             return Game(board, players.toList(), playerTerritories.toMap(), units)
         }
     }
@@ -143,5 +143,13 @@ class Game private constructor(
         val newUnits = territoryUnits.toMutableMap()
         newUnits[territory] = newUnits[territory]!! + units
         return Game(board, players, playerTerritories, newUnits.toMap(), playerIndex, state)
+    }
+
+    // Player transition
+    fun setOwner(oldOwner: PlayerId, newOwner: PlayerId, territoryId: TerritoryId): Game {
+        val newPlayerTerritories = playerTerritories.toMutableMap()
+        newPlayerTerritories[oldOwner] = playerTerritories[oldOwner]!!.filter { it != territoryId } // remove from old
+        newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
+        return Game(board, players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state)
     }
 }

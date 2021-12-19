@@ -7,14 +7,14 @@ internal class BoardTest {
 
     @Test
     fun adjacentTerritoryTest() {
-        val england = Territory("England")
-        val wales = Territory("Wales")
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
         val builder = Board.Builder()
         val territories = listOf(england, wales)
-        builder.addTerritories(territories)
-        builder.addEdge(england.getId(), wales.getId())
+//        builder.addTerritories(territories)
+        builder.addEdge(england, wales)
         val board = builder.build()
-        assertTrue(board.areAdjacent(england.getId(), wales.getId()))
+        assertTrue(board.areAdjacent(england, wales))
     }
 
 //    @Test

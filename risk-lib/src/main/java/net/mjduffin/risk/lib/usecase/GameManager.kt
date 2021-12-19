@@ -2,7 +2,6 @@ package net.mjduffin.risk.lib.usecase
 
 import net.mjduffin.risk.lib.entities.*
 import net.mjduffin.risk.lib.usecase.request.*
-import net.mjduffin.risk.lib.usecase.request.AttackRequest.player
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -20,9 +19,9 @@ class GameManager internal constructor(private var game: Game, private val diceM
     private var lastAttackingUnitCount = 0
     var lastDefendingTerritory: TerritoryId? = null
 
-//    override fun registerPlayerOutput(output: PlayerOutput) {
-//        this.output = output
-//    }
+    override fun registerPlayerOutput(output: PlayerOutput) {
+        this.output = output
+    }
 
     private fun isPlayerTurn(player: Player): Boolean {
         return player.getId() == game.currentPlayer || game.state == Game.State.ALLDRAFT
@@ -64,8 +63,8 @@ class GameManager internal constructor(private var game: Game, private val diceM
 
         //Verify total number of troops is correct
         for ((territoryName, units) in draft) {
-            val t = game.board.territories[TerritoryId(territoryName)]!!
-            draftUnits(t, player, units)
+            val territoryId = TerritoryId(territoryName)
+            draftUnits(territoryId, player, units)
         }
         if (game.state === Game.State.ALLDRAFT) {
             game = game.nextPlayer()
@@ -102,16 +101,16 @@ class GameManager internal constructor(private var game: Game, private val diceM
         if (game.state !== Game.State.ATTACK) {
             throw GameplayException("Not in attack phase")
         }
-        val player = getPlayer(playerName)
-        if (player.getId() != game.currentPlayer) {
+        val attackingPlayer = getPlayer(playerName)
+        if (attackingPlayer.getId() != game.currentPlayer) {
             throw GameplayException("Not current player")
         }
         val attacker = TerritoryId(attackingTerritory)
         val defender = TerritoryId(defendingTerritory)
-        if (!areSamePlayer(player, attacker)) {
+        if (!areSamePlayer(attackingPlayer, attacker)) {
             throw GameplayException("Attacking player is not the same as player calling attack")
         }
-        if (areSamePlayer(player, defender)) {
+        if (areSamePlayer(attackingPlayer, defender)) {
             throw GameplayException("Attacker is same as defender")
         }
         attack(attacker, defender)
@@ -122,8 +121,10 @@ class GameManager internal constructor(private var game: Game, private val diceM
         result.defendUnits = game.getUnits(defender)
         if (result.defendUnits == 0) {
             //Attacker won, set new territory owner and transition to MOVE phase
-            defender.player = player
-            game.nextState()
+            val defendingPlayer = game.getPlayerForTerritory(defender)!!
+            game = game
+                .setOwner(defendingPlayer, attackingPlayer.getId(), defender)
+                .nextState()
         }
         return result
     }
@@ -204,21 +205,18 @@ class GameManager internal constructor(private var game: Game, private val diceM
     }
 
     override fun getGameState(): GameState {
-        val gameState = GameState(game.currentPlayer.name, game.state.toString())
-        val territories: List<TerritoryId> = game.board.territories
-        val sz = territories.size
-//        gameState.territories = arrayOfNulls(sz)
-//        gameState.occupyingPlayers = arrayOfNulls(sz)
-//        gameState.units = arrayOfNulls(sz)
-        gameState.unitsToPlace = game.currentDraftableUnits()
-        for (i in 0 until sz) {
-            val t = territories[i]
-            gameState.territories[i] = t.name
-            gameState.occupyingPlayers[i] = t.player.getName()
-            gameState.units[i] = t.getUnits()
-        }
-        // if distinct players is <= 1 then game has ended
-        gameState.hasEnded = territories.stream().map(TerritoryId::bonus).distinct().count() <= 1
+        val territories: List<TerritoryId> = game.board.allTerritories().toList()
+        val occupyingPlayers = territories.map { game.getPlayerForTerritory(it)!!.toString() }
+        val hasEnded = occupyingPlayers.distinct().size == 1
+        val gameState = GameState(
+            game.currentPlayer.name,
+            game.state.toString(),
+            game.currentDraftableUnits(),
+            territories.map { it.toString() },
+            occupyingPlayers,
+            territories.map { game.getUnits(it) },
+            hasEnded
+        )
         return gameState
     }
 
@@ -237,7 +235,7 @@ class GameManager internal constructor(private var game: Game, private val diceM
     }
 
     fun start() {
-        var gameState = gameState
+        var gameState = getGameState()
         while (!gameState.hasEnded) {
             output!!.turn(gameState)
             //TODO: wait to pull request off queue
@@ -252,15 +250,15 @@ class GameManager internal constructor(private var game: Game, private val diceM
         System.out.printf("Game has ended, %s has won!", gameState.occupyingPlayers[0])
     }
 
-    fun notify(oldPlayer: Player?, newPlayer: Player) {
+    override fun notify(oldPlayer: PlayerId, newPlayer: PlayerId) {
         //New player's go
 
         //No harm doing this each time
 //        newPlayer.calulateAndSetDraftableUnits(game.state)
     }
 
-    override fun notify(oldState: Game.State?, newState: Game.State?) {
-        println("New state: " + newState.toString())
+    override fun notify(oldState: Game.State, newState: Game.State) {
+        println("New state: $newState")
     }
 
     override fun receiveRequest(request: Request) {

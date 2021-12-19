@@ -1,24 +1,14 @@
 package net.mjduffin.risk.lib.usecase
 
-import net.mjduffin.risk.lib.entities.DieThrow.dieValue
-import net.mjduffin.risk.lib.entities.Game.Builder.addPlayerWithTerritories
-import net.mjduffin.risk.lib.entities.Game.Builder.build
-import net.mjduffin.risk.lib.usecase.PlayerInput.draft
-import net.mjduffin.risk.lib.entities.Game.board
-import net.mjduffin.risk.lib.usecase.PlayerInput.attack
-import net.mjduffin.risk.lib.entities.Game
-import net.mjduffin.risk.lib.usecase.PlayerInput
-import net.mjduffin.risk.lib.entities.DieThrow
-import org.mockito.Mockito
 import net.mjduffin.risk.lib.entities.DiceManager
-import net.mjduffin.risk.lib.usecase.GameManager
-import net.mjduffin.risk.lib.usecase.GameplayException
-import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
-import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
-import net.mjduffin.risk.lib.usecase.AttackResult
+import net.mjduffin.risk.lib.entities.DieThrow
+import net.mjduffin.risk.lib.entities.Game
+import net.mjduffin.risk.lib.entities.TerritoryId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import java.util.*
+import kotlin.test.assertEquals
 
 internal class DraftTests {
     private val BOB = "Bob"
@@ -40,12 +30,12 @@ internal class DraftTests {
         val playerInput = getPlayerInputFromGame(game)
 
         // when
-        val draft: MutableMap<String, Int?> = HashMap()
+        val draft: MutableMap<String, Int> = HashMap()
         draft["England"] = 1
         draft["Wales"] = 3
         playerInput.draft(BOB, draft)
-        assertEquals(2, game.board.getTerritory("England").getUnits())
-        assertEquals(4, game.board.getTerritory("Wales").getUnits())
+        assertEquals(2, game.getUnits(TerritoryId("England")))
+        assertEquals(4, game.getUnits(TerritoryId("Wales")))
     }
 
     @Test
@@ -59,7 +49,7 @@ internal class DraftTests {
         gameBuilder.addPlayerWithTerritories(ALICE, listOf("England"))
         val game = gameBuilder.build()
         val playerInput = getPlayerInputFromGame(game)
-        val draft: MutableMap<String, Int?> = HashMap()
+        val draft: MutableMap<String, Int> = HashMap()
         draft["Wales"] = 4
         playerInput.draft(BOB, draft)
         draft.clear()

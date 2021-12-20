@@ -11,8 +11,10 @@ class Board private constructor(
     ) {
 
         fun addEdge(from: TerritoryId, to: TerritoryId) = apply {
-            val edges = this.adjTerritories.getOrDefault(from, listOf())
-            this.adjTerritories[from] = edges + to
+            val edgesFrom = this.adjTerritories.getOrDefault(from, listOf())
+            val edgesTo = this.adjTerritories.getOrDefault(to, listOf())
+            this.adjTerritories[from] = edgesFrom + to
+            this.adjTerritories[to] = edgesTo + from
         }
 
         fun build() = Board(adjTerritories.toMap())

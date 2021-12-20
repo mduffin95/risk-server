@@ -47,7 +47,7 @@ class GameManager internal constructor(private var game: Game, private val diceM
     private fun addUnitsToTerritory(territory: TerritoryId, player: Player, units: Int) {
         val check = game.getPlayerForTerritory(territory)
         if (check != null && check == player.getId()) {
-//            game.getPlayer
+            game = game.addUnits(territory, units)
         } else {
             throw GameplayException("Cannot add units to territory as it is not owned by the player")
         }
@@ -206,13 +206,13 @@ class GameManager internal constructor(private var game: Game, private val diceM
 
     override fun getGameState(): GameState {
         val territories: List<TerritoryId> = game.board.allTerritories().toList()
-        val occupyingPlayers = territories.map { game.getPlayerForTerritory(it)!!.toString() }
+        val occupyingPlayers = territories.map { game.getPlayerForTerritory(it)!!.name }
         val hasEnded = occupyingPlayers.distinct().size == 1
         val gameState = GameState(
             game.currentPlayer.name,
             game.state.toString(),
             game.currentDraftableUnits(),
-            territories.map { it.toString() },
+            territories.map { it.name },
             occupyingPlayers,
             territories.map { game.getUnits(it) },
             hasEnded

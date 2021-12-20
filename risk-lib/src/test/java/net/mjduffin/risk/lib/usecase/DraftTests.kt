@@ -6,55 +6,63 @@ import net.mjduffin.risk.lib.entities.Game
 import net.mjduffin.risk.lib.entities.TerritoryId
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 internal class DraftTests {
     private val BOB = "Bob"
     private val ALICE = "Alice"
-    fun getPlayerInputFromGame(game: Game?): PlayerInput {
+
+    private fun getGameManagerFromGame(game: Game): GameManager {
         val dieThrow = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dieThrow.dieValue).thenReturn(1)
         val diceManager = DiceManager(dieThrow)
-        return GameManager(game!!, diceManager)
+        return GameManager(game, diceManager)
     }
 
     @Test
-    @Throws(GameplayException::class)
     fun draft() {
         // given
         val gameBuilder = Game.Builder()
-        gameBuilder.addPlayerWithTerritories(BOB, Arrays.asList("England", "Wales"))
+        gameBuilder.addPlayerWithTerritories(BOB, listOf("England", "Wales"))
+        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
-        val playerInput = getPlayerInputFromGame(game)
+        val gameManager = getGameManagerFromGame(game)
 
         // when
         val draft: MutableMap<String, Int> = HashMap()
         draft["England"] = 1
         draft["Wales"] = 3
-        playerInput.draft(BOB, draft)
-        assertEquals(2, game.getUnits(TerritoryId("England")))
-        assertEquals(4, game.getUnits(TerritoryId("Wales")))
+        gameManager.draft(BOB, draft)
+        val gameState = gameManager.getGameState()
+
+        // then
+        val expected = GameState(BOB, "ATTACK", 3, listOf("England", "Wales"), listOf(BOB, BOB), listOf(2, 4), hasEnded = true)
+        assertEquals(expected, gameState)
     }
 
     @Test
-    @Throws(GameplayException::class)
     fun draftTwiceInRow() {
         // given
         val gameBuilder = Game.Builder()
 
         // TODO: This is currently dependent on the order
+        // when
         gameBuilder.addPlayerWithTerritories(BOB, listOf("Wales"))
         gameBuilder.addPlayerWithTerritories(ALICE, listOf("England"))
+        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
-        val playerInput = getPlayerInputFromGame(game)
+        val playerInput = getGameManagerFromGame(game)
         val draft: MutableMap<String, Int> = HashMap()
         draft["Wales"] = 4
         playerInput.draft(BOB, draft)
         draft.clear()
         draft["England"] = 1
         playerInput.draft(ALICE, draft)
-        Assertions.assertThrows(GameplayException::class.java) { playerInput.draft(BOB, draft) }
+        // then
+        assertFailsWith<GameplayException> { playerInput.draft(BOB, draft) }
     }
 }

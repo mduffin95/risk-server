@@ -29,11 +29,11 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     //Returns true if a particular player has finished drafting
     private fun finishedDrafting(player: PlayerId): Boolean {
-        return game.calculateDraftableUnits(player) == 0
+        return game.getDraftableUnits(player) == 0
     }
 
     private fun draftUnits(territory: TerritoryId, player: PlayerId, units: Int) {
-        val remaining = game.calculateDraftableUnits(player)
+        val remaining = game.getDraftableUnits(player)
         if (remaining > 0 && units <= remaining) {
             addUnitsToTerritory(territory, player, units)
         } else {
@@ -109,6 +109,9 @@ class GameManager internal constructor(private val board: Board, private var gam
         }
         if (areSamePlayer(attackingPlayer, defender)) {
             throw GameplayException("Attacker is same as defender")
+        }
+        if (!board.areAdjacent(attacker, defender)) {
+            throw GameplayException("Territories are not adjacent")
         }
         attack(attacker, defender)
         val result = AttackResult()
@@ -187,12 +190,12 @@ class GameManager internal constructor(private val board: Board, private var gam
         val from = TerritoryId(fromTerritory)
         val to = TerritoryId(toTerritory)
         if (!areSamePlayer(player, from) || !areSamePlayer(player, to)) {
-            return
+            throw GameplayException("Territory not owned by ${player.name}")
         }
         if (units > game.getAvailableUnits(from)) {
             throw GameplayException("Moving too many units")
         }
-        if (board.areConnected(from, to)) {
+        if (board.areConnected(from, to, game::getPlayerForTerritory)) {
             //Remove units from 'from' and add to 'to'
             game = game.moveUnits(from, to, units)
             endTurn()

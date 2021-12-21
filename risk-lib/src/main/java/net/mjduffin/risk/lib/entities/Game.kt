@@ -90,7 +90,10 @@ class Game private constructor(
 
     fun nextPlayer(): Game {
         val newIndex = (playerIndex + 1) % players.size
-        return Game(players, playerTerritories, territoryUnits, playerIndex = newIndex, state = state, draftRemaining)
+        // calculate new draft
+        val draft = players.map { it to calculateDraft(it) }.toMap()
+
+        return Game(players, playerTerritories, territoryUnits, playerIndex = newIndex, state = state, draft)
     }
 
     val currentPlayer: PlayerId
@@ -122,25 +125,29 @@ class Game private constructor(
 
     fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
 
-    fun currentDraftableUnits(): Int = calculateDraftableUnits(currentPlayer)
+    fun currentDraftableUnits(): Int = getDraftableUnits(currentPlayer)
 
-    fun calculateDraftableUnits(playerId: PlayerId): Int {
+    fun getDraftableUnits(playerId: PlayerId): Int {
         return draftRemaining[playerId] ?: throw PlayerNotFoundException()
-//        return if (State.ALLDRAFT == state) {
-//            10
-//        } else {
-//            var territoryBonus = totalTerritories(playerId) / 3
-//            if (territoryBonus < 3) {
-//                territoryBonus = 3
-//            }
-//            territoryBonus
-//        }
+    }
+
+    private fun calculateDraft(playerId: PlayerId): Int {
+        return if (State.ALLDRAFT == state) {
+            10
+        } else {
+            var territoryBonus = totalTerritories(playerId) / 3
+            if (territoryBonus < 3) {
+                territoryBonus = 3
+            }
+            territoryBonus
+        }
     }
 
     private fun territoryToPlayerMap() =
         playerTerritories.entries.flatMap { entry -> entry.value.map { it to entry.key } }.toMap()
 
-    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId? = territoryToPlayerMap()[territoryId]
+    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId =
+        territoryToPlayerMap()[territoryId] ?: throw PlayerNotFoundException()
 
     // Unit operations
     fun getUnits(territoryId: TerritoryId): Int = territoryUnits[territoryId] ?: throw TerritoryNotFoundException()

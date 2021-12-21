@@ -1,20 +1,69 @@
 package net.mjduffin.risk.lib.entities
 
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class BoardTest {
 
     @Test
-    fun adjacentTerritoryTest() {
+    fun `adjacent territories should be detected`() {
+        // given/when
         val england = TerritoryId("England")
         val wales = TerritoryId("Wales")
-        val builder = Board.Builder()
-        val territories = listOf(england, wales)
-//        builder.addTerritories(territories)
-        builder.addEdge(england, wales)
-        val board = builder.build()
+        val board = Board.Builder().addEdge(england, wales).build()
+
+        // then
         assertTrue(board.areAdjacent(england, wales))
+    }
+
+    @Test
+    fun `non-adjacent territories should be rejected`() {
+        // given/when
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
+        val scotland = TerritoryId("Scotland")
+        val board = Board.Builder()
+            .addEdge(england, wales)
+            .addEdge(england, scotland)
+            .build()
+
+        // then
+        assertFalse(board.areAdjacent(wales, scotland))
+    }
+
+
+    @Test
+    fun `connected territories should be detected`() {
+        // given/when
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
+        val scotland = TerritoryId("Scotland")
+        val board = Board.Builder()
+            .addEdge(england, wales)
+            .addEdge(england, scotland)
+            .build()
+        val playerLookup = { x: TerritoryId -> PlayerId("PlayerA")}
+
+        // then
+        assertTrue(board.areConnected(wales, scotland, playerLookup))
+    }
+
+
+    @Test
+    fun `unconnected territories should be rejected`() {
+        // given/when
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
+        val scotland = TerritoryId("Scotland")
+        val board = Board.Builder()
+            .addEdge(england, wales)
+            .addEdge(england, scotland)
+            .build()
+        val playerLookup = { x: TerritoryId -> if (x.name == "England") PlayerId("PlayerA") else PlayerId("PlayerB")}
+
+        // then
+        assertFalse(board.areConnected(wales, scotland, playerLookup))
     }
 
 //    @Test

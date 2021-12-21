@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 
-class GameManager internal constructor(private var game: Game, private val diceManager: DiceManager) :
+class GameManager internal constructor(private val board: Board, private var game: Game, private val diceManager: DiceManager) :
     PlayerInput,
     StateChangeObserver,
     PlayerChangeObserver,
@@ -136,7 +136,7 @@ class GameManager internal constructor(private var game: Game, private val diceM
 
         //Subtract 1 as needs to remain on territory
         var attackUnits: Int = game.getAvailableUnits(attacker)
-        var defendUnits: Int = game.getAvailableUnits(defender)
+        var defendUnits: Int = game.getUnits(defender)
         val originalAttackers = attackUnits
         val originalDefenders = defendUnits
         try {
@@ -195,7 +195,7 @@ class GameManager internal constructor(private var game: Game, private val diceM
         if (units > game.getAvailableUnits(from)) {
             throw GameplayException("Moving too many units")
         }
-        if (game.board.areConnected(from, to)) {
+        if (board.areConnected(from, to)) {
             //Remove units from 'from' and add to 'to'
             game = game.moveUnits(from, to, units)
             endTurn()
@@ -205,7 +205,7 @@ class GameManager internal constructor(private var game: Game, private val diceM
     }
 
     override fun getGameState(): GameState {
-        val territories: List<TerritoryId> = game.board.allTerritories().toList()
+        val territories: List<TerritoryId> = board.allTerritories().toList()
         val occupyingPlayers = territories.map { game.getPlayerForTerritory(it)!!.name }
         val hasEnded = occupyingPlayers.distinct().size == 1
         val gameState = GameState(

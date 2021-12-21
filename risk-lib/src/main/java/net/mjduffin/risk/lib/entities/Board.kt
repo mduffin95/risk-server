@@ -10,6 +10,10 @@ class Board private constructor(
             val adjTerritories: MutableMap<TerritoryId, List<TerritoryId>> = mutableMapOf()
     ) {
 
+        fun addEdge(from: String, to: String) = apply {
+            this.addEdge(TerritoryId(from), TerritoryId(to))
+        }
+
         fun addEdge(from: TerritoryId, to: TerritoryId) = apply {
             val edgesFrom = this.adjTerritories.getOrDefault(from, listOf())
             val edgesTo = this.adjTerritories.getOrDefault(to, listOf())

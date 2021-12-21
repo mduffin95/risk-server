@@ -8,8 +8,8 @@ import kotlin.collections.HashSet
 
 //Assume game is in draft mode as soon as it is created
 // immutable
+// all state that changes during a game
 class Game private constructor(
-    val board: Board,
     private val players: List<Player>,
     private val playerTerritories: Map<PlayerId, List<TerritoryId>>,
     private val territoryUnits: Map<TerritoryId, Int>,
@@ -18,7 +18,6 @@ class Game private constructor(
 ) {
 
     data class Builder(
-        private var boardBuilder: Board.Builder = Board.Builder(),
         private var players: MutableList<Player> = mutableListOf(),
         private var playerTerritories: MutableMap<PlayerId, List<TerritoryId>> = mutableMapOf()
     ) {
@@ -33,14 +32,9 @@ class Game private constructor(
             this.players.add(player)
         }
 
-        fun addEdge(from: String, to: String) = apply {
-            this.boardBuilder.addEdge(TerritoryId(from), TerritoryId(to))
-        }
-
         fun build(): Game {
-            val board = boardBuilder.build()
-            val units = board.allTerritories().map { it to 1 }.toMap()
-            return Game(board, players.toList(), playerTerritories.toMap(), units)
+            val units = playerTerritories.values.flatMap { it }.distinct().map { it to 1 }.toMap()
+            return Game(players.toList(), playerTerritories.toMap(), units)
         }
     }
 
@@ -81,7 +75,7 @@ class Game private constructor(
 
     fun nextPlayer(): Game {
         val newIndex = (playerIndex + 1) % players.size
-        return Game(board, players, playerTerritories, territoryUnits, newIndex, state)
+        return Game(players, playerTerritories, territoryUnits, newIndex, state)
     }
 
     val currentPlayer: PlayerId
@@ -100,7 +94,7 @@ class Game private constructor(
     }
 
     fun nextState(): Game {
-        return Game(board, players, playerTerritories, territoryUnits, playerIndex, state.nextState())
+        return Game(players, playerTerritories, territoryUnits, playerIndex, state.nextState())
     }
 
     fun getNumPlayers(): Int {
@@ -142,7 +136,7 @@ class Game private constructor(
     fun addUnits(territory: TerritoryId, units: Int): Game {
         val newUnits = territoryUnits.toMutableMap()
         newUnits[territory] = newUnits[territory]!! + units
-        return Game(board, players, playerTerritories, newUnits.toMap(), playerIndex, state)
+        return Game(players, playerTerritories, newUnits.toMap(), playerIndex, state)
     }
 
     // Player transition
@@ -150,6 +144,6 @@ class Game private constructor(
         val newPlayerTerritories = playerTerritories.toMutableMap()
         newPlayerTerritories[oldOwner] = playerTerritories[oldOwner]!!.filter { it != territoryId } // remove from old
         newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
-        return Game(board, players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state)
+        return Game(players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state)
     }
 }

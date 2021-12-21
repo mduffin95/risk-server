@@ -1,9 +1,6 @@
 package net.mjduffin.risk.lib.usecase
 
-import net.mjduffin.risk.lib.entities.DiceManager
-import net.mjduffin.risk.lib.entities.DieThrow
-import net.mjduffin.risk.lib.entities.Game
-import net.mjduffin.risk.lib.entities.RandomDieThrow
+import net.mjduffin.risk.lib.entities.*
 
 object GameFactory {
     private const val NORTH_AMERICA = "NorthAmerica"
@@ -25,16 +22,16 @@ object GameFactory {
         terr2.add(AUSTRALASIA)
         gameBuilder.addPlayerWithTerritories("Alice", terr1)
         gameBuilder.addPlayerWithTerritories("Bob", terr2)
-        gameBuilder.addEdge(NORTH_AMERICA, SOUTH_AMERICA)
+        val board = Board.Builder().addEdge(NORTH_AMERICA, SOUTH_AMERICA)
             .addEdge(NORTH_AMERICA, EUROPE)
             .addEdge(NORTH_AMERICA, ASIA)
             .addEdge(SOUTH_AMERICA, AFRICA)
             .addEdge(EUROPE, AFRICA)
             .addEdge(EUROPE, ASIA)
-            .addEdge(ASIA, AUSTRALASIA)
+            .addEdge(ASIA, AUSTRALASIA).build()
         val game = gameBuilder.build()
         val dieThrow: DieThrow = RandomDieThrow()
         val diceManager = DiceManager(dieThrow)
-        return GameManager(game, diceManager)
+        return GameManager(board, game, diceManager)
     }
 }

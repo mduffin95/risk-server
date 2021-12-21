@@ -1,9 +1,6 @@
 package net.mjduffin.risk.lib.usecase
 
-import net.mjduffin.risk.lib.entities.DiceManager
-import net.mjduffin.risk.lib.entities.DieThrow
-import net.mjduffin.risk.lib.entities.Game
-import net.mjduffin.risk.lib.entities.TerritoryId
+import net.mjduffin.risk.lib.entities.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,7 +17,8 @@ internal class DraftTests {
         val dieThrow = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dieThrow.dieValue).thenReturn(1)
         val diceManager = DiceManager(dieThrow)
-        return GameManager(game, diceManager)
+        val board = Board.Builder().addEdge("England", "Wales").build()
+        return GameManager(board, game, diceManager)
     }
 
     @Test
@@ -28,7 +26,7 @@ internal class DraftTests {
         // given
         val gameBuilder = Game.Builder()
         gameBuilder.addPlayerWithTerritories(BOB, listOf("England", "Wales"))
-        gameBuilder.addEdge("England", "Wales")
+//        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
         val gameManager = getGameManagerFromGame(game)
 
@@ -53,7 +51,7 @@ internal class DraftTests {
         // when
         gameBuilder.addPlayerWithTerritories(BOB, listOf("Wales"))
         gameBuilder.addPlayerWithTerritories(ALICE, listOf("England"))
-        gameBuilder.addEdge("England", "Wales")
+//        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
         val playerInput = getGameManagerFromGame(game)
         val draft: MutableMap<String, Int> = HashMap()

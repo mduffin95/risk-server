@@ -1,4 +1,4 @@
-package net.mjduffin.risk.cli.adapters;
+package net.mjduffin.risk.cli.adapters.console;
 
 public class ConsoleRequest {
     private String request;

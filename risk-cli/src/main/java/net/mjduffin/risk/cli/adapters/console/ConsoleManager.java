@@ -1,11 +1,9 @@
-package net.mjduffin.risk.cli.adapters;
+package net.mjduffin.risk.cli.adapters.console;
 
 import net.mjduffin.risk.lib.usecase.GameState;
 import net.mjduffin.risk.lib.usecase.PlayerOutput;
 import net.mjduffin.risk.lib.usecase.request.Request;
 import net.mjduffin.risk.lib.usecase.request.RequestAcceptor;
-
-import java.util.Arrays;
 
 public class ConsoleManager implements PlayerOutput, ConsoleController {
     RequestAcceptor useCases;

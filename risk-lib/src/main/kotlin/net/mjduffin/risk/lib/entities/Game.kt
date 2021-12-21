@@ -160,7 +160,9 @@ class Game private constructor(
 
     fun addUnits(territory: TerritoryId, units: Int): Game {
         val newUnits = territoryUnits.toMutableMap()
-        newUnits[territory] = newUnits[territory]!! + units
+        val updated = newUnits[territory]!! + units
+        assert(updated >= 0) { "Updated units for territory ${territory.name} are less than zero" }
+        newUnits[territory] = updated
         return Game(players, playerTerritories, newUnits.toMap(), playerIndex, state, draftRemaining)
     }
 

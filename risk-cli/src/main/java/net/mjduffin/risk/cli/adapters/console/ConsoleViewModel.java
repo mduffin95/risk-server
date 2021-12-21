@@ -1,4 +1,4 @@
-package net.mjduffin.risk.cli.adapters;
+package net.mjduffin.risk.cli.adapters.console;
 
 public class ConsoleViewModel {
     //Game state formatted for console output

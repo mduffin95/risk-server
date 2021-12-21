@@ -1,9 +1,9 @@
 package net.mjduffin.risk.cli.view;
 
-import net.mjduffin.risk.cli.adapters.ConsoleController;
-import net.mjduffin.risk.cli.adapters.ConsoleRequest;
-import net.mjduffin.risk.cli.adapters.ConsoleView;
-import net.mjduffin.risk.cli.adapters.ConsoleViewModel;
+import net.mjduffin.risk.cli.adapters.console.ConsoleController;
+import net.mjduffin.risk.cli.adapters.console.ConsoleRequest;
+import net.mjduffin.risk.cli.adapters.console.ConsoleView;
+import net.mjduffin.risk.cli.adapters.console.ConsoleViewModel;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -170,8 +170,11 @@ class GameManager internal constructor(private val board: Board, private var gam
         if (units < lastAttackingUnitCount) {
             throw GameplayException("Move count must be >= $lastAttackingUnitCount")
         }
-
-        if (game.getPlayerForTerritory(lastAttackingTerritory!!)!! == p) {
+        val availableUnits = game.getAvailableUnits(lastAttackingTerritory!!)
+        if (units > availableUnits) {
+            throw GameplayException("Move count must be <= $availableUnits")
+        }
+        if (game.getPlayerForTerritory(lastAttackingTerritory!!) == p) {
             game = game.moveUnits(lastAttackingTerritory!!, lastDefendingTerritory!!, units)
         } else {
             throw GameplayException("Players are not the same")

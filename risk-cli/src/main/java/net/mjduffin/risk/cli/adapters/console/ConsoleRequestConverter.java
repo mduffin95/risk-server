@@ -1,4 +1,4 @@
-package net.mjduffin.risk.cli.adapters;
+package net.mjduffin.risk.cli.adapters.console;
 
 import net.mjduffin.risk.lib.usecase.request.*;
 

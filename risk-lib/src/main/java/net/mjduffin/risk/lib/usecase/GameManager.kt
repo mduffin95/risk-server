@@ -12,7 +12,7 @@ class GameManager internal constructor(private val board: Board, private var gam
     PlayerChangeObserver,
     RequestAcceptor {
 
-    private val unitStores: Map<Player, UnitStore> = HashMap()
+//    private val unitStores: Map<PlayerId, UnitStore> = HashMap()
     private val requestQueue: BlockingQueue<Request> = LinkedBlockingQueue()
     var output: PlayerOutput? = null
     var lastAttackingTerritory: TerritoryId? = null
@@ -23,31 +23,30 @@ class GameManager internal constructor(private val board: Board, private var gam
         this.output = output
     }
 
-    private fun isPlayerTurn(player: Player): Boolean {
-        return player.getId() == game.currentPlayer || game.state == Game.State.ALLDRAFT
+    private fun isPlayerTurn(player: PlayerId): Boolean {
+        return player == game.currentPlayer || game.state == Game.State.ALLDRAFT
     }
 
     //Returns true if a particular player has finished drafting
-    private fun finishedDrafting(player: Player?): Boolean {
-        return player!!.finishedDrafting()
+    private fun finishedDrafting(player: PlayerId): Boolean {
+        return game.calculateDraftableUnits(player) == 0
     }
 
-    private fun draftUnits(territory: TerritoryId, player: Player, units: Int) {
-        val remaining = game.calculateDraftableUnits(player.getId())
+    private fun draftUnits(territory: TerritoryId, player: PlayerId, units: Int) {
+        val remaining = game.calculateDraftableUnits(player)
         if (remaining > 0 && units <= remaining) {
             addUnitsToTerritory(territory, player, units)
 
             //Add new units on
-            player.useUnits(units)
         } else {
             throw GameplayException("Not enough units")
         }
     }
 
-    private fun addUnitsToTerritory(territory: TerritoryId, player: Player, units: Int) {
+    private fun addUnitsToTerritory(territory: TerritoryId, player: PlayerId, units: Int) {
         val check = game.getPlayerForTerritory(territory)
-        if (check != null && check == player.getId()) {
-            game = game.addUnits(territory, units)
+        if (check != null && check == player) {
+            game = game.addUnits(territory, units).useUnits(player, units)
         } else {
             throw GameplayException("Cannot add units to territory as it is not owned by the player")
         }
@@ -102,7 +101,7 @@ class GameManager internal constructor(private val board: Board, private var gam
             throw GameplayException("Not in attack phase")
         }
         val attackingPlayer = getPlayer(playerName)
-        if (attackingPlayer.getId() != game.currentPlayer) {
+        if (attackingPlayer != game.currentPlayer) {
             throw GameplayException("Not current player")
         }
         val attacker = TerritoryId(attackingTerritory)
@@ -123,7 +122,7 @@ class GameManager internal constructor(private val board: Board, private var gam
             //Attacker won, set new territory owner and transition to MOVE phase
             val defendingPlayer = game.getPlayerForTerritory(defender)!!
             game = game
-                .setOwner(defendingPlayer, attackingPlayer.getId(), defender)
+                .setOwner(defendingPlayer, attackingPlayer, defender)
                 .nextState()
         }
         return result
@@ -160,7 +159,7 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     override fun endAttack(playerName: String) {
         val player = getPlayer(playerName)
-        if (game.currentPlayer == player.getId() && game.state == Game.State.ATTACK) {
+        if (game.currentPlayer == player && game.state == Game.State.ATTACK) {
             game = game.nextState()
         }
     }
@@ -171,7 +170,7 @@ class GameManager internal constructor(private val board: Board, private var gam
             throw GameplayException(String.format("Move count must be >= {}", lastAttackingUnitCount))
         }
 
-        if (game.getPlayerForTerritory(lastAttackingTerritory!!)!! == p.getId()) {
+        if (game.getPlayerForTerritory(lastAttackingTerritory!!)!! == p) {
             game = game.moveUnits(lastAttackingTerritory!!, lastDefendingTerritory!!, units)
         } else {
             throw GameplayException("Players are not the same")
@@ -184,7 +183,7 @@ class GameManager internal constructor(private val board: Board, private var gam
             throw GameplayException("Not in fortify phase")
         }
         val player = getPlayer(playerName)
-        if (player.getId() != game.currentPlayer) {
+        if (player != game.currentPlayer) {
             throw GameplayException("Not current player")
         }
         val from = TerritoryId(fromTerritory)
@@ -220,9 +219,9 @@ class GameManager internal constructor(private val board: Board, private var gam
         return gameState
     }
 
-    private fun areSamePlayer(player: Player, territory: TerritoryId): Boolean {
+    private fun areSamePlayer(player: PlayerId, territory: TerritoryId): Boolean {
         val p = game.getPlayerForTerritory(territory)
-        return p != null && p == player.getId()
+        return p != null && p == player
     }
 
     fun endTurn() {
@@ -230,7 +229,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         game = game.nextState()
     }
 
-    private fun getPlayer(playerName: String): Player {
+    private fun getPlayer(playerName: String): PlayerId {
         return game.getPlayer(playerName)
     }
 

@@ -21,10 +21,10 @@ public class ConsoleManager implements PlayerOutput, ConsoleController {
         ConsoleViewModel vm = new ConsoleViewModel();
         vm.setCurrentPlayer(gameState.getCurrentPlayer());
         vm.setPhase(gameState.getPhase());
-        vm.unitsToPlace = gameState.unitsToPlace;
-        vm.territories = Arrays.copyOf(gameState.territories, gameState.territories.length);
-        vm.occupyingPlayers = Arrays.copyOf(gameState.occupyingPlayers, gameState.occupyingPlayers.length);
-        vm.units = Arrays.copyOf(gameState.units, gameState.units.length);
+        vm.unitsToPlace = gameState.getUnitsToPlace();
+        vm.territories = gameState.getTerritories().toArray(new String[0]);
+        vm.occupyingPlayers = gameState.getOccupyingPlayers().toArray(new String[0]);
+        vm.units = gameState.getUnits().toArray(new Integer[0]);
 
         return vm;
     }

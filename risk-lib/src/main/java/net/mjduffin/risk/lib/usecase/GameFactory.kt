@@ -10,6 +10,7 @@ object GameFactory {
     private const val ASIA = "Asia"
     private const val AUSTRALASIA = "Australasia"
 
+    @JvmStatic
     fun basicGame(players: List<String>): GameManager {
         val gameBuilder = Game.Builder()
         val terr1: MutableList<String> = ArrayList()

@@ -2,39 +2,54 @@ package net.mjduffin.risk.lib.entities
 
 import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
 import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
-import java.awt.datatransfer.ClipboardOwner
-import java.util.function.Consumer
-import kotlin.collections.HashSet
 
 //Assume game is in draft mode as soon as it is created
 // immutable
 // all state that changes during a game
 class Game private constructor(
-    private val players: List<Player>,
+    private val players: List<PlayerId>,
     private val playerTerritories: Map<PlayerId, List<TerritoryId>>,
     private val territoryUnits: Map<TerritoryId, Int>,
     private val playerIndex: Int = 0,
-    val state: State = State.ALLDRAFT
+    val state: State = State.ALLDRAFT,
+    private val draftRemaining: Map<PlayerId, Int> = mapOf()
 ) {
 
     data class Builder(
-        private var players: MutableList<Player> = mutableListOf(),
-        private var playerTerritories: MutableMap<PlayerId, List<TerritoryId>> = mutableMapOf()
+        private var players: MutableList<PlayerId> = mutableListOf(),
+        private var playerTerritories: MutableMap<PlayerId, List<TerritoryId>> = mutableMapOf(),
+        private var state: State = State.ALLDRAFT
     ) {
 
         // add player and territories at the same time, therefore assigning a player to each territory
         fun addPlayerWithTerritories(playerName: String, territoryNames: List<String>) = apply {
-            val player = Player(playerName)
+            val player = PlayerId(playerName)
             val territories = territoryNames.map { TerritoryId(it) }
-            playerTerritories[player.getId()] = territories
+            playerTerritories[player] = territories
 
             // add territories to board
             this.players.add(player)
         }
 
+//        private fun getUnits(playerId: PlayerId): Int {
+//            return if (State.ALLDRAFT == state) {
+//                10
+//            } else {
+//                var territoryBonus = totalTerritories(playerId) / 3
+//                if (territoryBonus < 3) {
+//                    territoryBonus = 3
+//                }
+//                territoryBonus
+//            }
+//        }
+
+        private fun getUnitsMap(): Map<PlayerId, Int> {
+            return players.map { it to 10 }.toMap()
+        }
+
         fun build(): Game {
             val units = playerTerritories.values.flatMap { it }.distinct().map { it to 1 }.toMap()
-            return Game(players.toList(), playerTerritories.toMap(), units)
+            return Game(players.toList(), playerTerritories.toMap(), units, state = state, draftRemaining = getUnitsMap())
         }
     }
 
@@ -75,16 +90,16 @@ class Game private constructor(
 
     fun nextPlayer(): Game {
         val newIndex = (playerIndex + 1) % players.size
-        return Game(players, playerTerritories, territoryUnits, newIndex, state)
+        return Game(players, playerTerritories, territoryUnits, playerIndex = newIndex, state = state, draftRemaining)
     }
 
     val currentPlayer: PlayerId
-        get() = players[playerIndex].getId()
+        get() = players[playerIndex]
 
     val isFirstPlayer: Boolean
         get() = playerIndex == 0
 
-    fun getPlayer(name: String): Player {
+    fun getPlayer(name: String): PlayerId {
         for (p in players) {
             if (p.name == name) {
                 return p
@@ -94,7 +109,7 @@ class Game private constructor(
     }
 
     fun nextState(): Game {
-        return Game(players, playerTerritories, territoryUnits, playerIndex, state.nextState())
+        return Game(players, playerTerritories, territoryUnits, playerIndex, state.nextState(), draftRemaining)
     }
 
     fun getNumPlayers(): Int {
@@ -106,17 +121,16 @@ class Game private constructor(
     fun currentDraftableUnits(): Int = calculateDraftableUnits(currentPlayer)
 
     fun calculateDraftableUnits(playerId: PlayerId): Int {
-        currentPlayer
-
-        return if (State.ALLDRAFT == state) {
-            10
-        } else {
-            var territoryBonus = totalTerritories(playerId) / 3
-            if (territoryBonus < 3) {
-                territoryBonus = 3
-            }
-            territoryBonus
-        }
+        return draftRemaining[playerId] ?: throw PlayerNotFoundException()
+//        return if (State.ALLDRAFT == state) {
+//            10
+//        } else {
+//            var territoryBonus = totalTerritories(playerId) / 3
+//            if (territoryBonus < 3) {
+//                territoryBonus = 3
+//            }
+//            territoryBonus
+//        }
     }
 
     private fun territoryToPlayerMap() =
@@ -136,7 +150,15 @@ class Game private constructor(
     fun addUnits(territory: TerritoryId, units: Int): Game {
         val newUnits = territoryUnits.toMutableMap()
         newUnits[territory] = newUnits[territory]!! + units
-        return Game(players, playerTerritories, newUnits.toMap(), playerIndex, state)
+        return Game(players, playerTerritories, newUnits.toMap(), playerIndex, state, draftRemaining)
+    }
+
+    fun useUnits(player: PlayerId, units: Int): Game {
+        val newDraft = draftRemaining.toMutableMap()
+        val updated = newDraft[player]!! - units
+        assert(updated >= 0)
+        newDraft[player] = updated
+        return Game(players, playerTerritories, territoryUnits, playerIndex, state, newDraft.toMap())
     }
 
     // Player transition
@@ -144,6 +166,6 @@ class Game private constructor(
         val newPlayerTerritories = playerTerritories.toMutableMap()
         newPlayerTerritories[oldOwner] = playerTerritories[oldOwner]!!.filter { it != territoryId } // remove from old
         newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
-        return Game(players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state)
+        return Game(players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state, draftRemaining)
     }
 }

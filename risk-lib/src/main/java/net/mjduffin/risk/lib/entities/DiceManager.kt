@@ -4,12 +4,8 @@ import net.mjduffin.risk.lib.usecase.GameplayException
 import java.util.*
 
 class DiceManager(private val random: DieThrow) {
-    class Result {
-        var attackers = 0
-        var defenders = 0
-    }
+    data class Result(val attackers: Int = 0, val defenders: Int = 0)
 
-//    @Throws(GameplayException::class)
     fun engage(attackers: Int, defenders: Int): Result {
         if (attackers > 3 || defenders > 2) {
             throw GameplayException("Incorrect number of dice")
@@ -24,18 +20,17 @@ class DiceManager(private val random: DieThrow) {
             val num = random.dieValue
             defendResults.add(num)
         }
-        val result = Result()
-        result.attackers = attackers
-        result.defenders = defenders
+        var remainingAttackers = attackers
+        var remainingDefenders = defenders
         while (!attackResults.isEmpty() && !defendResults.isEmpty()) {
             val a = attackResults.poll()
             val d = defendResults.poll()
             if (a > d) {
-                result.defenders--
+                remainingDefenders--
             } else {
-                result.attackers--
+                remainingAttackers--
             }
         }
-        return result
+        return Result(remainingAttackers, remainingDefenders)
     }
 }

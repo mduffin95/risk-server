@@ -1,6 +1,5 @@
 package net.mjduffin.risk.lib.entities
 
-import net.mjduffin.risk.lib.usecase.GameplayException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -8,7 +7,6 @@ import org.mockito.Mockito
 internal class DiceManagerTest {
 
     @Test
-//    @Throws(GameplayException::class)
     fun diceTest() {
         val dt = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dt.dieValue).thenReturn(1)
@@ -19,7 +17,6 @@ internal class DiceManagerTest {
     }
 
     @Test
-    @Throws(GameplayException::class)
     fun diceAttackerWins() {
         val dt = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dt.dieValue).thenReturn(6).thenReturn(6).thenReturn(6).thenReturn(4).thenReturn(5)

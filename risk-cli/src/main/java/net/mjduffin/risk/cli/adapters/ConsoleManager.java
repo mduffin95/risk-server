@@ -40,8 +40,13 @@ public class ConsoleManager implements PlayerOutput, ConsoleController {
     public void request(ConsoleRequest request) {
         GameState gameState = useCases.getGameState();
         //Get current player and phase and use to convert to a request
-        Request r = ConsoleRequestConverter.convertRequest(request, gameState.getCurrentPlayer(), gameState.getPhase());
-        useCases.receiveRequest(r);
+        try {
+            Request r = ConsoleRequestConverter.convertRequest(request, gameState.getCurrentPlayer(), gameState.getPhase());
+            assert r != null;
+            useCases.receiveRequest(r);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

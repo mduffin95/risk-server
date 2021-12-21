@@ -36,8 +36,6 @@ class GameManager internal constructor(private val board: Board, private var gam
         val remaining = game.calculateDraftableUnits(player)
         if (remaining > 0 && units <= remaining) {
             addUnitsToTerritory(territory, player, units)
-
-            //Add new units on
         } else {
             throw GameplayException("Not enough units")
         }
@@ -160,14 +158,14 @@ class GameManager internal constructor(private val board: Board, private var gam
     override fun endAttack(playerName: String) {
         val player = getPlayer(playerName)
         if (game.currentPlayer == player && game.state == Game.State.ATTACK) {
-            game = game.nextState()
+            game = game.goToState(Game.State.FORTIFY)
         }
     }
 
     override fun move(playerName: String, units: Int) {
         val p = getPlayer(playerName)
         if (units < lastAttackingUnitCount) {
-            throw GameplayException(String.format("Move count must be >= {}", lastAttackingUnitCount))
+            throw GameplayException("Move count must be >= $lastAttackingUnitCount")
         }
 
         if (game.getPlayerForTerritory(lastAttackingTerritory!!)!! == p) {
@@ -175,7 +173,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         } else {
             throw GameplayException("Players are not the same")
         }
-        game.nextState()
+        game = game.nextState()
     }
 
     override fun fortify(playerName: String, fromTerritory: String, toTerritory: String, units: Int) {

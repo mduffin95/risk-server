@@ -109,7 +109,11 @@ class Game private constructor(
     }
 
     fun nextState(): Game {
-        return Game(players, playerTerritories, territoryUnits, playerIndex, state.nextState(), draftRemaining)
+        return goToState(state.nextState())
+    }
+
+    fun goToState(newState: State): Game {
+        return Game(players, playerTerritories, territoryUnits, playerIndex, newState, draftRemaining)
     }
 
     fun getNumPlayers(): Int {

@@ -78,6 +78,11 @@ class Game private constructor(
 
     fun nextPlayer(): Game {
         val newIndex = (playerIndex + 1) % players.size
+        if (newIndex == playerIndex) {
+            // if there is only one player left then we can't move to another player,
+            // so it doesn't make sense to re-calculate the draft
+            return this
+        }
         // calculate new draft
         val draft = players.map { it to calculateDraft(it) }.toMap()
 
@@ -100,7 +105,9 @@ class Game private constructor(
     }
 
     fun nextState(): Game {
-        return goToState(state.nextState())
+        val hasEnded = playerTerritories.keys.size == 1
+        val next = if (hasEnded) State.END else state.nextState()
+        return goToState(next)
     }
 
     fun goToState(newState: State): Game {
@@ -162,8 +169,15 @@ class Game private constructor(
     // Player transition
     fun setOwner(oldOwner: PlayerId, newOwner: PlayerId, territoryId: TerritoryId): Game {
         val newPlayerTerritories = playerTerritories.toMutableMap()
-        newPlayerTerritories[oldOwner] = playerTerritories[oldOwner]!!.filter { it != territoryId } // remove from old
+        val losingPlayerTerritories = playerTerritories[oldOwner]!!.filter { it != territoryId } // remove from old
+        val newPlayers = players.toMutableList()
+        if (losingPlayerTerritories.isEmpty()) {
+            newPlayerTerritories.remove(oldOwner)
+            newPlayers.remove(oldOwner)
+        } else {
+            newPlayerTerritories[oldOwner] = losingPlayerTerritories
+        }
         newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
-        return Game(players, newPlayerTerritories.toMap(), territoryUnits, playerIndex, state, draftRemaining)
+        return Game(newPlayers.toList(), newPlayerTerritories.toMap(), territoryUnits, playerIndex, state, draftRemaining)
     }
 }

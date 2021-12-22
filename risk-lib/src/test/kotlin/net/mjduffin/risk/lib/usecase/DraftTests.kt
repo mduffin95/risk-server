@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 internal class DraftTests {
     private val BOB = "Bob"
@@ -39,7 +38,7 @@ internal class DraftTests {
         val gameState = gameManager.getGameState()
 
         // then
-        val expected = GameState(BOB, "ATTACK", 6, listOf("England", "Wales"), listOf(BOB, BOB), listOf(2, 4), hasEnded = true)
+        val expected = GameState(BOB, "END", 6, listOf("England", "Wales"), listOf(BOB, BOB), listOf(2, 4))
         assertEquals(expected, gameState)
     }
 
@@ -70,22 +69,16 @@ internal class DraftTests {
         // when
         gameBuilder.addPlayerWithTerritories(BOB, listOf("England"))
         gameBuilder.addPlayerWithTerritories(ALICE, listOf("Wales"))
-//        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
         val playerInput = getGameManagerFromGame(game)
-//        playerInput.draft(BOB, mapOf(Pair("Wales", 20)))
-//        playerInput.draft(ALICE, mapOf(Pair("England", 1)))
+
         // then
         playerInput.draftSingle(BOB, "England", 3)
         playerInput.draftSingle(BOB, "England", 3)
         val gameState = playerInput.getGameState()
-
-        // then
-//        val expected = GameState(BOB, "ALLDRAFT", 4, listOf("England", "Wales"), listOf(BOB, ALICE), listOf(7, 1), hasEnded = false)
         assertEquals("ALLDRAFT", gameState.phase)
         assertEquals(listOf("England", "Wales"), gameState.territories)
         assertEquals(listOf(BOB, ALICE), gameState.occupyingPlayers)
         assertEquals(listOf(7, 1), gameState.units)
-        assertTrue(!gameState.hasEnded)
     }
 }

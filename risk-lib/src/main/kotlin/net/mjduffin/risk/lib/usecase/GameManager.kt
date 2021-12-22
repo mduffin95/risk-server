@@ -241,15 +241,13 @@ class GameManager internal constructor(private val board: Board, private var gam
     override fun getGameState(): GameState {
         val territories: List<TerritoryId> = board.allTerritories().toList()
         val occupyingPlayers = territories.map { game.getPlayerForTerritory(it).name }
-        val hasEnded = occupyingPlayers.distinct().size == 1
         val gameState = GameState(
             game.currentPlayer.name,
-            game.state.toString(),
+            game.state.name,
             game.currentDraftableUnits(),
             territories.map { it.name },
             occupyingPlayers,
-            territories.map { game.getUnits(it) },
-            hasEnded
+            territories.map { game.getUnits(it) }
         )
         return gameState
     }
@@ -260,8 +258,8 @@ class GameManager internal constructor(private val board: Board, private var gam
     }
 
     fun start() {
-        var gameState = getGameState()
-        while (!gameState.hasEnded) {
+        while (game.state != Game.State.END) {
+            val gameState = getGameState()
             output!!.turn(gameState)
             //TODO: wait to pull request off queue
             val r = requestQueue.take()
@@ -270,9 +268,8 @@ class GameManager internal constructor(private val board: Board, private var gam
             } catch (e: GameplayException) {
                 System.err.println(e.message)
             }
-            gameState = getGameState()
         }
-        System.out.printf("Game has ended, %s has won!", gameState.occupyingPlayers[0])
+        System.out.printf("Game has ended, %s has won!", getGameState().occupyingPlayers[0])
     }
 
     override fun notify(oldPlayer: PlayerId, newPlayer: PlayerId) {

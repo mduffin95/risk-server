@@ -17,13 +17,13 @@ class Board private constructor(
         return adjacent.contains(b)
     }
 
-    fun areConnected(a: TerritoryId, b: TerritoryId, playerLookup: (TerritoryId) -> PlayerId): Boolean {
-        val player = playerLookup(a)
-        require(player == playerLookup(b)) { "Players are not the same" }
+    fun areConnected(a: TerritoryId, b: TerritoryId, playerLookup: Map<TerritoryId, PlayerId>): Boolean {
+        val player = playerLookup[a]
+        require(player == playerLookup[b]) { "Players are not the same" }
 
         val visited = mutableSetOf<TerritoryId>()
 
-        val connected: Set<TerritoryId> = getConnected(a).filter { player == playerLookup(it) }.toSet()
+        val connected: Set<TerritoryId> = getConnected(a).filter { player == playerLookup[it] }.toSet()
         val queue: Queue<TerritoryId> = LinkedList()
         queue.addAll(connected)
 

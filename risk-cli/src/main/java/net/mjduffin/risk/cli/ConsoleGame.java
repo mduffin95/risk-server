@@ -11,9 +11,7 @@ import java.util.List;
 public class ConsoleGame {
 
     public static void main(String[] args) {
-        List<String> players = Arrays.asList("Joe", "Sam");
-
-        GameManager manager = GameFactory.basicGame(players);
+        GameManager manager = GameFactory.basicGame();
         ConsoleInput input = new ConsoleInput();
         ConsoleManager consoleManager = new ConsoleManager(manager);
 
@@ -26,6 +24,4 @@ public class ConsoleGame {
             e.printStackTrace();
         }
     }
-
-
 }

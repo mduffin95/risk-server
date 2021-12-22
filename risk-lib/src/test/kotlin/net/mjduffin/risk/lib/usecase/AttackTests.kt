@@ -9,9 +9,9 @@ import org.mockito.Mockito
 import kotlin.test.assertEquals
 
 class AttackTests {
-    var PLAYER_A = "PlayerA"
-    var PLAYER_B = "PlayerB"
-    var PLAYER_C = "PlayerC"
+    private val PLAYER_A = "PlayerA"
+    private val PLAYER_B = "PlayerB"
+    private val PLAYER_C = "PlayerC"
 
     private fun createTwoPlayerGame(dieThrow: DieThrow): GameManager {
         val gameBuilder = Game.Builder()

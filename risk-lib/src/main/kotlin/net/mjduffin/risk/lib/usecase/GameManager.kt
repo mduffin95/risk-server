@@ -229,7 +229,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         if (units > game.getAvailableUnits(from)) {
             throw GameplayException("Moving too many units")
         }
-        if (board.areConnected(from, to, game::getPlayerForTerritory)) {
+        if (board.areConnected(from, to, game.territoryToPlayerMap)) {
             //Remove units from 'from' and add to 'to'
             game = game.moveUnits(from, to, units)
             endTurn()

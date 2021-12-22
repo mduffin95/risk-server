@@ -43,7 +43,8 @@ internal class BoardTest {
             .addEdge(england, wales)
             .addEdge(england, scotland)
             .build()
-        val playerLookup = { x: TerritoryId -> PlayerId("PlayerA")}
+        val a = PlayerId("PlayerA")
+        val playerLookup = mapOf(Pair(england, a), Pair(wales, a), Pair(scotland, a))
 
         // then
         assertTrue(board.areConnected(wales, scotland, playerLookup))
@@ -60,7 +61,9 @@ internal class BoardTest {
             .addEdge(england, wales)
             .addEdge(england, scotland)
             .build()
-        val playerLookup = { x: TerritoryId -> if (x.name == "England") PlayerId("PlayerA") else PlayerId("PlayerB")}
+        val a = PlayerId("PlayerA")
+        val b = PlayerId("PlayerB")
+        val playerLookup = mapOf(Pair(england, a), Pair(wales, b), Pair(scotland, b))
 
         // then
         assertFalse(board.areConnected(wales, scotland, playerLookup))

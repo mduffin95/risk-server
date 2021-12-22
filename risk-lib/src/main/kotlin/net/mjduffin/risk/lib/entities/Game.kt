@@ -10,7 +10,7 @@ class Game private constructor(
     private val players: List<PlayerId>,
     private val playerTerritories: Map<PlayerId, List<TerritoryId>>,
     private val territoryUnits: Map<TerritoryId, Int>,
-    private val playerIndex: Int = 0,
+    val currentPlayer: PlayerId,
     val state: State = State.ALLDRAFT,
     private val draftRemaining: Map<PlayerId, Int> = mapOf()
 ) {
@@ -32,12 +32,13 @@ class Game private constructor(
         }
 
         private fun getUnitsMap(): Map<PlayerId, Int> {
+            // TODO: Calculate draft properly
             return players.map { it to 10 }.toMap()
         }
 
         fun build(): Game {
             val units = playerTerritories.values.flatMap { it }.distinct().map { it to 1 }.toMap()
-            return Game(players.toList(), playerTerritories.toMap(), units, state = state, draftRemaining = getUnitsMap())
+            return Game(players.toList(), playerTerritories.toMap(), units, players[0], state, getUnitsMap())
         }
     }
 
@@ -77,8 +78,9 @@ class Game private constructor(
     }
 
     fun nextPlayer(): Game {
-        val newIndex = (playerIndex + 1) % players.size
-        if (newIndex == playerIndex) {
+        val index = players.indexOf(currentPlayer)
+        val newIndex = (index + 1) % players.size
+        if (newIndex == index) {
             // if there is only one player left then we can't move to another player,
             // so it doesn't make sense to re-calculate the draft
             return this
@@ -86,14 +88,11 @@ class Game private constructor(
         // calculate new draft
         val draft = players.map { it to calculateDraft(it) }.toMap()
 
-        return Game(players, playerTerritories, territoryUnits, playerIndex = newIndex, state = state, draft)
+        return Game(players, playerTerritories, territoryUnits, players[newIndex], state, draft)
     }
 
-    val currentPlayer: PlayerId
-        get() = players[playerIndex]
-
     val isFirstPlayer: Boolean
-        get() = playerIndex == 0
+        get() = players.indexOf(currentPlayer) == 0
 
     fun getPlayer(name: String): PlayerId {
         for (p in players) {
@@ -111,7 +110,7 @@ class Game private constructor(
     }
 
     fun goToState(newState: State): Game {
-        return Game(players, playerTerritories, territoryUnits, playerIndex, newState, draftRemaining)
+        return Game(players, playerTerritories, territoryUnits, currentPlayer, newState, draftRemaining)
     }
 
     private fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
@@ -134,10 +133,12 @@ class Game private constructor(
         }
     }
 
-    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId {
-        val territoryToPlayerMap = playerTerritories.entries
+    val territoryToPlayerMap
+        get() = playerTerritories.entries
             .flatMap { entry -> entry.value.map { it to entry.key } }
             .toMap()
+
+    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId {
         return territoryToPlayerMap[territoryId] ?: throw PlayerNotFoundException()
     }
 
@@ -155,7 +156,7 @@ class Game private constructor(
         val updated = newUnits[territory]!! + units
         assert(updated >= 0) { "Updated units for territory ${territory.name} are less than zero" }
         newUnits[territory] = updated
-        return Game(players, playerTerritories, newUnits.toMap(), playerIndex, state, draftRemaining)
+        return Game(players, playerTerritories, newUnits.toMap(), currentPlayer, state, draftRemaining)
     }
 
     fun useUnits(player: PlayerId, units: Int): Game {
@@ -163,7 +164,7 @@ class Game private constructor(
         val updated = newDraft[player]!! - units
         assert(updated >= 0)
         newDraft[player] = updated
-        return Game(players, playerTerritories, territoryUnits, playerIndex, state, newDraft.toMap())
+        return Game(players, playerTerritories, territoryUnits, currentPlayer, state, newDraft.toMap())
     }
 
     // Player transition
@@ -174,10 +175,11 @@ class Game private constructor(
         if (losingPlayerTerritories.isEmpty()) {
             newPlayerTerritories.remove(oldOwner)
             newPlayers.remove(oldOwner)
+            // update playerIndex if necessary
         } else {
             newPlayerTerritories[oldOwner] = losingPlayerTerritories
         }
         newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
-        return Game(newPlayers.toList(), newPlayerTerritories.toMap(), territoryUnits, playerIndex, state, draftRemaining)
+        return Game(newPlayers.toList(), newPlayerTerritories.toMap(), territoryUnits, currentPlayer, state, draftRemaining)
     }
 }

@@ -1,12 +1,9 @@
 package net.mjduffin.risk.cli;
 
-import net.mjduffin.risk.cli.adapters.console.ConsoleManager;
+import net.mjduffin.risk.cli.adapters.ConsoleManager;
 import net.mjduffin.risk.cli.view.ConsoleInput;
 import net.mjduffin.risk.cli.view.ConsoleViewImpl;
 import net.mjduffin.risk.lib.usecase.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class ConsoleGame {
 

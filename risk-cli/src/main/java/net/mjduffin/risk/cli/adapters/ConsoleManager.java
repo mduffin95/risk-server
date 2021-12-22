@@ -1,4 +1,4 @@
-package net.mjduffin.risk.cli.adapters.console;
+package net.mjduffin.risk.cli.adapters;
 
 import net.mjduffin.risk.lib.usecase.GameState;
 import net.mjduffin.risk.lib.usecase.PlayerOutput;

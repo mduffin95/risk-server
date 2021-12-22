@@ -1,4 +1,4 @@
-package net.mjduffin.risk.cli.adapters.console;
+package net.mjduffin.risk.cli.adapters;
 
 public interface ConsoleController {
     void request(ConsoleRequest request);

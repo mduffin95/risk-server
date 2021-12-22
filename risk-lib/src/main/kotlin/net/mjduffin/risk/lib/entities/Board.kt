@@ -59,7 +59,7 @@ class Board private constructor(
             this.adjTerritories[to] = edgesTo + from
         }
 
-        fun addToContinent(continent: Continent, territory: TerritoryId) {
+        fun addToContinent(continent: Continent, territory: TerritoryId) = apply {
             this.continents[continent] = this.continents.getOrDefault(continent, setOf()) + territory
         }
 

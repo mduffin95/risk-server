@@ -14,7 +14,7 @@ public class ConsoleManager implements PlayerOutput, ConsoleController {
         useCases.registerPlayerOutput(this);
     }
 
-    ConsoleViewModel convertToViewModel(GameState gameState) {
+    private ConsoleViewModel convertToViewModel(GameState gameState) {
         //Take game state from usecases and convert to view model specific to console output medium
         ConsoleViewModel vm = new ConsoleViewModel();
         vm.setCurrentPlayer(gameState.getCurrentPlayer());

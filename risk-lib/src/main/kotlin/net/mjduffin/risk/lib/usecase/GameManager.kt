@@ -51,36 +51,29 @@ class GameManager internal constructor(private val board: Board, private var gam
         return p == player
     }
 
-    //TODO: Could pass requests directly into methods
     private fun processRequest(request: Request) {
-        val type: Request.Type? = request.requestType
-        when (type) {
-            Request.Type.DRAFT -> {
-                val draftRequest = request as DraftRequest
-                draftSingle(draftRequest.player, draftRequest.territory, draftRequest.units)
+        when (request) {
+            is DraftRequest -> {
+                draftSingle(request.player, request.territory, request.units)
             }
-            Request.Type.ATTACK -> {
-                val attackRequest = request as AttackRequest
-                attack(attackRequest.player, attackRequest.attacker, attackRequest.defender)
+            is AttackRequest -> {
+                attack(request.player, request.attacker, request.defender)
             }
-            Request.Type.MOVE -> {
-                val moveRequest = request as MoveRequest
-                move(moveRequest.playerName, moveRequest.units)
+            is MoveRequest -> {
+                move(request.playerName, request.units)
             }
-            Request.Type.ENDATTACK -> {
-                val req = request as EndAttackRequest
-                endAttack(req.playerName)
+            is EndAttackRequest -> {
+                endAttack(request.playerName)
             }
-            Request.Type.FORTIFY -> {
-                val fortifyRequest = request as FortifyRequest
+            is FortifyRequest -> {
                 fortify(
-                    fortifyRequest.playerName,
-                    fortifyRequest.fromTerritory,
-                    fortifyRequest.toTerritory,
-                    fortifyRequest.units
+                    request.playerName,
+                    request.fromTerritory,
+                    request.toTerritory,
+                    request.units
                 )
             }
-            Request.Type.SKIPFORTIFY -> endTurn()
+            is SkipFortifyRequest -> endTurn()
         }
     }
 

@@ -1,13 +1,19 @@
 package net.mjduffin.risk.lib.usecase.request
 
-open class Request {
+interface Request
 
-    enum class Type {
-        DRAFT, ATTACK, ENDATTACK, MOVE, FORTIFY, SKIPFORTIFY
-    }
+data class MoveRequest(val playerName: String, val units: Int) : Request
 
-    var requestType: Type? = null
-        protected set
-}
+data class FortifyRequest(
+    val playerName: String,
+    val fromTerritory: String,
+    val toTerritory: String,
+    val units: Int) : Request
 
+data class EndAttackRequest(val playerName: String) : Request
 
+data class DraftRequest(val player: String, val territory: String, val units: Int) : Request
+
+data class AttackRequest(val player: String, val attacker: String, val defender: String) : Request
+
+class SkipFortifyRequest : Request

@@ -6,7 +6,9 @@ import java.util.*
 /**
  * The game board which is completely immutable.
  */
-class Board private constructor(private val adjTerritories: Map<TerritoryId, List<TerritoryId>>) {
+class Board private constructor(
+    private val adjTerritories: Map<TerritoryId, Set<TerritoryId>>,
+    private val continents: Map<Continent, Set<TerritoryId>>) {
 
     fun allTerritories(): Set<TerritoryId> = adjTerritories.keys
 
@@ -21,7 +23,7 @@ class Board private constructor(private val adjTerritories: Map<TerritoryId, Lis
 
         val visited = mutableSetOf<TerritoryId>()
 
-        val connected: List<TerritoryId> = getConnected(a).filter { player == playerLookup(it) }.toList()
+        val connected: Set<TerritoryId> = getConnected(a).filter { player == playerLookup(it) }.toSet()
         val queue: Queue<TerritoryId> = LinkedList()
         queue.addAll(connected)
 
@@ -37,12 +39,13 @@ class Board private constructor(private val adjTerritories: Map<TerritoryId, Lis
         return false
     }
 
-    private fun getConnected(territory: TerritoryId): List<TerritoryId> {
+    private fun getConnected(territory: TerritoryId): Set<TerritoryId> {
         return adjTerritories[territory] ?: throw GameplayException("No territories connected to ${territory.name}")
     }
 
     data class Builder(
-        val adjTerritories: MutableMap<TerritoryId, List<TerritoryId>> = mutableMapOf()
+        val adjTerritories: MutableMap<TerritoryId, Set<TerritoryId>> = mutableMapOf(),
+        val continents: MutableMap<Continent, Set<TerritoryId>> = mutableMapOf()
     ) {
 
         fun addEdge(from: String, to: String) = apply {
@@ -50,12 +53,16 @@ class Board private constructor(private val adjTerritories: Map<TerritoryId, Lis
         }
 
         fun addEdge(from: TerritoryId, to: TerritoryId) = apply {
-            val edgesFrom = this.adjTerritories.getOrDefault(from, listOf())
-            val edgesTo = this.adjTerritories.getOrDefault(to, listOf())
+            val edgesFrom = this.adjTerritories.getOrDefault(from, setOf())
+            val edgesTo = this.adjTerritories.getOrDefault(to, setOf())
             this.adjTerritories[from] = edgesFrom + to
             this.adjTerritories[to] = edgesTo + from
         }
 
-        fun build() = Board(adjTerritories.toMap())
+        fun addToContinent(continent: Continent, territory: TerritoryId) {
+            this.continents[continent] = this.continents.getOrDefault(continent, setOf()) + territory
+        }
+
+        fun build() = Board(adjTerritories.toMap(), continents.toMap())
     }
 }

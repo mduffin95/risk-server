@@ -31,18 +31,6 @@ class Game private constructor(
             this.players.add(player)
         }
 
-//        private fun getUnits(playerId: PlayerId): Int {
-//            return if (State.ALLDRAFT == state) {
-//                10
-//            } else {
-//                var territoryBonus = totalTerritories(playerId) / 3
-//                if (territoryBonus < 3) {
-//                    territoryBonus = 3
-//                }
-//                territoryBonus
-//            }
-//        }
-
         private fun getUnitsMap(): Map<PlayerId, Int> {
             return players.map { it to 10 }.toMap()
         }
@@ -119,11 +107,7 @@ class Game private constructor(
         return Game(players, playerTerritories, territoryUnits, playerIndex, newState, draftRemaining)
     }
 
-    fun getNumPlayers(): Int {
-        return players.size
-    }
-
-    fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
+    private fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
 
     fun currentDraftableUnits(): Int = getDraftableUnits(currentPlayer)
 
@@ -143,11 +127,12 @@ class Game private constructor(
         }
     }
 
-    private fun territoryToPlayerMap() =
-        playerTerritories.entries.flatMap { entry -> entry.value.map { it to entry.key } }.toMap()
-
-    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId =
-        territoryToPlayerMap()[territoryId] ?: throw PlayerNotFoundException()
+    fun getPlayerForTerritory(territoryId: TerritoryId): PlayerId {
+        val territoryToPlayerMap = playerTerritories.entries
+            .flatMap { entry -> entry.value.map { it to entry.key } }
+            .toMap()
+        return territoryToPlayerMap[territoryId] ?: throw PlayerNotFoundException()
+    }
 
     // Unit operations
     fun getUnits(territoryId: TerritoryId): Int = territoryUnits[territoryId] ?: throw TerritoryNotFoundException()

@@ -14,14 +14,10 @@ class GameManager internal constructor(private val board: Board, private var gam
 
 //    private val unitStores: Map<PlayerId, UnitStore> = HashMap()
     private val requestQueue: BlockingQueue<Request> = LinkedBlockingQueue()
-    var output: PlayerOutput? = null
-    var lastAttackingTerritory: TerritoryId? = null
+    private var output: PlayerOutput? = null
+    private var lastAttackingTerritory: TerritoryId? = null
     private var lastAttackingUnitCount = 0
-    var lastDefendingTerritory: TerritoryId? = null
-
-    override fun registerPlayerOutput(output: PlayerOutput) {
-        this.output = output
-    }
+    private var lastDefendingTerritory: TerritoryId? = null
 
     private fun isPlayerTurn(player: PlayerId): Boolean {
         return player == game.currentPlayer || game.state == Game.State.ALLDRAFT
@@ -43,17 +39,59 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     private fun addUnitsToTerritory(territory: TerritoryId, player: PlayerId, units: Int) {
         val check = game.getPlayerForTerritory(territory)
-        if (check != null && check == player) {
+        if (check == player) {
             game = game.addUnits(territory, units).useUnits(player, units)
         } else {
             throw GameplayException("Cannot add units to territory as it is not owned by the player")
         }
     }
 
+    private fun areSamePlayer(player: PlayerId, territory: TerritoryId): Boolean {
+        val p = game.getPlayerForTerritory(territory)
+        return p == player
+    }
+
+    //TODO: Could pass requests directly into methods
+    private fun processRequest(request: Request) {
+        val type: Request.Type? = request.requestType
+        when (type) {
+            Request.Type.DRAFT -> {
+                val draftRequest = request as DraftRequest
+                draftSingle(draftRequest.player, draftRequest.territory, draftRequest.units)
+            }
+            Request.Type.ATTACK -> {
+                val attackRequest = request as AttackRequest
+                attack(attackRequest.player, attackRequest.attacker, attackRequest.defender)
+            }
+            Request.Type.MOVE -> {
+                val moveRequest = request as MoveRequest
+                move(moveRequest.playerName, moveRequest.units)
+            }
+            Request.Type.ENDATTACK -> {
+                val req = request as EndAttackRequest
+                endAttack(req.playerName)
+            }
+            Request.Type.FORTIFY -> {
+                val fortifyRequest = request as FortifyRequest
+                fortify(
+                    fortifyRequest.playerName,
+                    fortifyRequest.fromTerritory,
+                    fortifyRequest.toTerritory,
+                    fortifyRequest.units
+                )
+            }
+            Request.Type.SKIPFORTIFY -> endTurn()
+        }
+    }
+
+    override fun registerPlayerOutput(output: PlayerOutput) {
+        this.output = output
+    }
+
     //Must be called with entire draft at once
     override fun draft(playerName: String, draft: Map<String, Int>) {
         //Verify that it's player's go (or ALL_DRAFT)
-        val player = getPlayer(playerName)
+        val player = game.getPlayer(playerName)
         if (!isPlayerTurn(player)) {
             throw GameplayException("Not player's turn")
         }
@@ -75,7 +113,7 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     override fun draftSingle(playerName: String, territoryName: String, units: Int) {
         //Verify that it's player's go (or ALL_DRAFT)
-        val player = getPlayer(playerName)
+        val player = game.getPlayer(playerName)
         if (!isPlayerTurn(player)) {
             throw GameplayException("Not player's turn")
         }
@@ -98,7 +136,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         if (game.state !== Game.State.ATTACK) {
             throw GameplayException("Not in attack phase")
         }
-        val attackingPlayer = getPlayer(playerName)
+        val attackingPlayer = game.getPlayer(playerName)
         if (attackingPlayer != game.currentPlayer) {
             throw GameplayException("Not current player")
         }
@@ -121,7 +159,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         result.defendUnits = game.getUnits(defender)
         if (result.defendUnits == 0) {
             //Attacker won, set new territory owner and transition to MOVE phase
-            val defendingPlayer = game.getPlayerForTerritory(defender)!!
+            val defendingPlayer = game.getPlayerForTerritory(defender)
             game = game
                 .setOwner(defendingPlayer, attackingPlayer, defender)
                 .nextState()
@@ -159,14 +197,14 @@ class GameManager internal constructor(private val board: Board, private var gam
     }
 
     override fun endAttack(playerName: String) {
-        val player = getPlayer(playerName)
+        val player = game.getPlayer(playerName)
         if (game.currentPlayer == player && game.state == Game.State.ATTACK) {
             game = game.goToState(Game.State.FORTIFY)
         }
     }
 
     override fun move(playerName: String, units: Int) {
-        val p = getPlayer(playerName)
+        val p = game.getPlayer(playerName)
         if (units < lastAttackingUnitCount) {
             throw GameplayException("Move count must be >= $lastAttackingUnitCount")
         }
@@ -186,7 +224,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         if (game.state !== Game.State.FORTIFY) {
             throw GameplayException("Not in fortify phase")
         }
-        val player = getPlayer(playerName)
+        val player = game.getPlayer(playerName)
         if (player != game.currentPlayer) {
             throw GameplayException("Not current player")
         }
@@ -209,7 +247,7 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     override fun getGameState(): GameState {
         val territories: List<TerritoryId> = board.allTerritories().toList()
-        val occupyingPlayers = territories.map { game.getPlayerForTerritory(it)!!.name }
+        val occupyingPlayers = territories.map { game.getPlayerForTerritory(it).name }
         val hasEnded = occupyingPlayers.distinct().size == 1
         val gameState = GameState(
             game.currentPlayer.name,
@@ -223,18 +261,9 @@ class GameManager internal constructor(private val board: Board, private var gam
         return gameState
     }
 
-    private fun areSamePlayer(player: PlayerId, territory: TerritoryId): Boolean {
-        val p = game.getPlayerForTerritory(territory)
-        return p != null && p == player
-    }
-
     fun endTurn() {
         game = game.nextPlayer()
         game = game.nextState()
-    }
-
-    private fun getPlayer(playerName: String): PlayerId {
-        return game.getPlayer(playerName)
     }
 
     fun start() {
@@ -254,10 +283,7 @@ class GameManager internal constructor(private val board: Board, private var gam
     }
 
     override fun notify(oldPlayer: PlayerId, newPlayer: PlayerId) {
-        //New player's go
-
-        //No harm doing this each time
-//        newPlayer.calulateAndSetDraftableUnits(game.state)
+        // New player's go
     }
 
     override fun notify(oldState: Game.State, newState: Game.State) {
@@ -266,39 +292,6 @@ class GameManager internal constructor(private val board: Board, private var gam
 
     override fun receiveRequest(request: Request) {
         requestQueue.add(request)
-    }
-
-    //TODO: Could pass requests directly into methods
-    private fun processRequest(request: Request) {
-        val type: Request.Type? = request.requestType
-        when (type) {
-            Request.Type.DRAFT -> {
-                val draftRequest = request as DraftRequest
-                draftSingle(draftRequest.player, draftRequest.territory, draftRequest.units)
-            }
-            Request.Type.ATTACK -> {
-                val attackRequest = request as AttackRequest
-                attack(attackRequest.player, attackRequest.attacker, attackRequest.defender)
-            }
-            Request.Type.MOVE -> {
-                val moveRequest = request as MoveRequest
-                move(moveRequest.playerName, moveRequest.units)
-            }
-            Request.Type.ENDATTACK -> {
-                val req = request as EndAttackRequest
-                endAttack(req.playerName)
-            }
-            Request.Type.FORTIFY -> {
-                val fortifyRequest = request as FortifyRequest
-                fortify(
-                    fortifyRequest.playerName,
-                    fortifyRequest.fromTerritory,
-                    fortifyRequest.toTerritory,
-                    fortifyRequest.units
-                )
-            }
-            Request.Type.SKIPFORTIFY -> endTurn()
-        }
     }
 
     init {

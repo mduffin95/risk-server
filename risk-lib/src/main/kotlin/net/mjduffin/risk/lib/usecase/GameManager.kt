@@ -6,13 +6,16 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 
-class GameManager internal constructor(private val board: Board, private var game: Game, private val diceManager: DiceManager) :
+class GameManager internal constructor(
+    private val board: Board,
+    private var game: Game,
+    private val diceManager: DiceManager
+) :
     PlayerInput,
     StateChangeObserver,
     PlayerChangeObserver,
     RequestAcceptor {
 
-//    private val unitStores: Map<PlayerId, UnitStore> = HashMap()
     private val requestQueue: BlockingQueue<Request> = LinkedBlockingQueue()
     private var output: PlayerOutput? = null
     private var lastAttackingTerritory: TerritoryId? = null
@@ -95,7 +98,7 @@ class GameManager internal constructor(private val board: Board, private var gam
             draftUnits(territoryId, player, units)
         }
         if (game.state === Game.State.ALLDRAFT) {
-            game = game.nextPlayer()
+            game = game.nextPlayer(board)
             if (game.isFirstPlayer) {
                 game = game.nextState()
             }
@@ -114,7 +117,7 @@ class GameManager internal constructor(private val board: Board, private var gam
         draftUnits(territoryId, player, units)
         if (game.state === Game.State.ALLDRAFT) {
             if (finishedDrafting(player)) {
-                game = game.nextPlayer()
+                game = game.nextPlayer(board)
                 if (game.isFirstPlayer) {
                     game = game.nextState()
                 }
@@ -253,7 +256,7 @@ class GameManager internal constructor(private val board: Board, private var gam
     }
 
     fun endTurn() {
-        game = game.nextPlayer()
+        game = game.nextPlayer(board)
         game = game.nextState()
     }
 

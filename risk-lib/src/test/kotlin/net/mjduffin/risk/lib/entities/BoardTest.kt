@@ -1,6 +1,7 @@
 package net.mjduffin.risk.lib.entities
 
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -69,6 +70,25 @@ internal class BoardTest {
         assertFalse(board.areConnected(wales, scotland, playerLookup))
     }
 
+    @Test
+    fun `full continents`() {
+        // given/when
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
+        val scotland = TerritoryId("Scotland")
+        val france = TerritoryId("France")
+        val uk = Continent("UK", 3)
+        val board = Board.Builder()
+            .addEdge(england, wales)
+            .addEdge(england, scotland)
+            .addEdge(england, france)
+            .addToContinent(uk, setOf(england, wales, scotland))
+            .build()
+
+        // then
+        setOf(england, wales, scotland, )
+        assertEquals(setOf(uk), board.fullContinents(setOf(england, wales, scotland, france)))
+    }
 //    @Test
 //    fun addPlayerTest() {
 //        //Test when adding a player to a territory that the player's unit count goes up by 1

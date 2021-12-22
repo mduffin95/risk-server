@@ -8,7 +8,8 @@ import java.util.*
  */
 class Board private constructor(
     private val adjTerritories: Map<TerritoryId, Set<TerritoryId>>,
-    private val continents: Map<Continent, Set<TerritoryId>>) {
+    private val continents: Map<Continent, Set<TerritoryId>>
+) {
 
     fun allTerritories(): Set<TerritoryId> = adjTerritories.keys
 
@@ -39,6 +40,10 @@ class Board private constructor(
         return false
     }
 
+    fun fullContinents(territories: Set<TerritoryId>): Set<Continent> {
+        return continents.filterValues { t -> territories.containsAll(t) }.keys
+    }
+
     private fun getConnected(territory: TerritoryId): Set<TerritoryId> {
         return adjTerritories[territory] ?: throw GameplayException("No territories connected to ${territory.name}")
     }
@@ -59,10 +64,19 @@ class Board private constructor(
             this.adjTerritories[to] = edgesTo + from
         }
 
-        fun addToContinent(continent: Continent, territory: TerritoryId) = apply {
-            this.continents[continent] = this.continents.getOrDefault(continent, setOf()) + territory
+        fun addToContinent(continent: Continent, territories: Set<TerritoryId>) = apply {
+            this.continents[continent] = this.continents.getOrDefault(continent, setOf()) + territories
         }
 
+        fun addToContinent(continent: Continent, territory: TerritoryId) = apply {
+            addToContinent(continent, setOf(territory))
+        }
+
+        fun addToContinent(continent: Continent, territory: String) = apply {
+            addToContinent(continent, TerritoryId(territory))
+        }
+
+        // TODO: Add validation to make sure they match
         fun build() = Board(adjTerritories.toMap(), continents.toMap())
     }
 }

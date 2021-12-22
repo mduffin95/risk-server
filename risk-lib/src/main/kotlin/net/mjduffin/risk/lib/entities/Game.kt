@@ -77,7 +77,7 @@ class Game private constructor(
         abstract fun nextState(): State
     }
 
-    fun nextPlayer(): Game {
+    fun nextPlayer(board: Board): Game {
         val index = players.indexOf(currentPlayer)
         val newIndex = (index + 1) % players.size
         if (newIndex == index) {
@@ -86,7 +86,7 @@ class Game private constructor(
             return this
         }
         // calculate new draft
-        val draft = players.map { it to calculateDraft(it) }.toMap()
+        val draft = players.map { it to calculateDraft(it, board) }.toMap()
 
         return Game(players, playerTerritories, territoryUnits, players[newIndex], state, draft)
     }
@@ -121,7 +121,7 @@ class Game private constructor(
         return draftRemaining[playerId] ?: throw PlayerNotFoundException()
     }
 
-    private fun calculateDraft(playerId: PlayerId): Int {
+    private fun calculateDraft(playerId: PlayerId, board: Board): Int {
         return if (State.ALLDRAFT == state) {
             10
         } else {
@@ -129,9 +129,18 @@ class Game private constructor(
             if (territoryBonus < 3) {
                 territoryBonus = 3
             }
-            territoryBonus
+            val territories = playerTerritories[playerId]?.toSet() ?: throw PlayerNotFoundException()
+            val continentBonus = board.fullContinents(territories).map { it.bonus }.sum()
+
+            territoryBonus + continentBonus
         }
     }
+
+//    private fun continentBonus(playerId: PlayerId): Int {
+//        val territories = playerTerritories.getOrDefault(playerId, listOf()).toSet()
+//
+//        board
+//    }
 
     val territoryToPlayerMap
         get() = playerTerritories.entries
@@ -180,6 +189,13 @@ class Game private constructor(
             newPlayerTerritories[oldOwner] = losingPlayerTerritories
         }
         newPlayerTerritories[newOwner] = playerTerritories[newOwner]!! + listOf(territoryId) // add to new player
-        return Game(newPlayers.toList(), newPlayerTerritories.toMap(), territoryUnits, currentPlayer, state, draftRemaining)
+        return Game(
+            newPlayers.toList(),
+            newPlayerTerritories.toMap(),
+            territoryUnits,
+            currentPlayer,
+            state,
+            draftRemaining
+        )
     }
 }

@@ -23,72 +23,7 @@
             crossorigin="anonymous"></script>
     <script src='https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js'></script>
-    <style>
-        .chats-row div {
-            height: 50%;
-            border: 1px solid #ddd;
-            padding: 0px;
-        }
-
-        .media-object {
-            max-width: 64px;
-        }
-
-        .current-chat {
-            height: 100vh;
-            border: 1px solid #ddd;
-        }
-
-        .current-chat-area {
-            padding-top: 10px;
-            overflow: auto;
-            height: 92vh;
-        }
-
-        .chat-input {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            height: 8vh;
-        }
-
-        .chat-input textarea {
-            width: 100%;
-            border: none;
-        }
-        .chat-input button {
-            position: absolute;
-            right: 10px;
-        }
-        .map-container {
-            position: relative;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: 80%;
-        }
-        .map {
-            width: 100%;
-        }
-        #alaska {
-           top: 12%;
-           left: 6%;
-        }
-
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            text-align: center;
-            vertical-align: middle;
-            behavior: url(PIE.htc); /* remove if you don't care about IE8 */
-            width: 3vw;
-            height: 3vw;
-            line-height: calc(3vw - 6px);
-            font-size: 1vw;
-            background: white;
-            border: 3px solid red;
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
 <div class="container-fluid">

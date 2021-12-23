@@ -263,7 +263,7 @@ class GameManager internal constructor(
     fun start() {
         while (game.state != Game.State.END) {
             val gameState = getGameState()
-            output!!.turn(gameState)
+            output?.turn(gameState)
             //TODO: wait to pull request off queue
             val r = requestQueue.take()
             try {

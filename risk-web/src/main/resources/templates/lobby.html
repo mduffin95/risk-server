@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Risk - game</title>
+    <title>Risk - lobby</title>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
@@ -85,7 +85,7 @@
             line-height: calc(3vw - 6px);
             font-size: 1vw;
             background: white;
-            border: 3px solid;
+            border: 3px solid red;
         }
 
     </style>
@@ -93,9 +93,7 @@
 <body>
 <div class="container-fluid">
     <div class="map-container">
-        <img class="map" alt="Risk board" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Risk_board.svg">
-<!--        <div id="alaska" class="circle">5</div>-->
-        <div th:each="territory : ${territories}" th:id="${territory.getName()}" th:style="'top: ' + ${territory.getTop()} + '%; left: ' + ${territory.getLeft()} + '%; border-color: ' + ${territory.getColor()}" class="circle" onclick="console.log('hello')" th:text="${territory.getUnits()}"></div>
+        <div><a href="/game">New Game</a></div>
     </div>
 </div>
 </body>

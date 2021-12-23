@@ -95,8 +95,24 @@
     <div class="map-container">
         <img class="map" alt="Risk board" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Risk_board.svg">
 <!--        <div id="alaska" class="circle">5</div>-->
-        <div th:each="territory : ${territories}" th:id="${territory.getName()}" th:style="'top: ' + ${territory.getTop()} + '%; left: ' + ${territory.getLeft()} + '%; border-color: ' + ${territory.getColor()}" class="circle" onclick="console.log('hello')" th:text="${territory.getUnits()}"></div>
+        <div th:each="territory : ${territories}" th:id="${territory.getName()}" th:style="'top: ' + ${territory.getTop()} + '%; left: ' + ${territory.getLeft()} + '%; border-color: ' + ${territory.getColor()}" class="circle" onclick="clicked(event)" th:text="${territory.getUnits()}"></div>
     </div>
 </div>
+<script>
+    var lastClicked = null;
+
+    function clicked(event) {
+        event = event || window.event; // IE
+        var target = event.target || event.srcElement; // IE
+
+        var id = target.id;
+        if (id == lastClicked) {
+            lastClicked = null;
+        } else {
+            lastClicked = id;
+        }
+        console.log(lastClicked)
+    }
+</script>
 </body>
 </html>

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.ui.set
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 
 @Controller
 class HtmlController(val messageService: TerritoryService, val gameManager: GameManager) {
@@ -22,7 +23,7 @@ class HtmlController(val messageService: TerritoryService, val gameManager: Game
         return "risk"
     }
 
-    @GetMapping("/")
+    @PostMapping("/game")
     fun lobby(): String {
         return "lobby"
     }

@@ -6,4 +6,5 @@ data class TerritoryVM(val name: String, val top: Int, val left: Int, val player
 
 data class Draft(val territory: String)
 data class Attack(val from: String, val to: String)
+data class Fortify(val from: String, val to: String, val units: Int)
 data class Move(val units: Int)

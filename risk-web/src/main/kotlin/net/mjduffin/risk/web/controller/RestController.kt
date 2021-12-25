@@ -48,4 +48,30 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
+    @GetMapping("/end")
+    fun end(): GameVM {
+        val currentState = gameManager.getGameState()
+        try {
+            if (currentState.phase.equals("ATTACK")) {
+                gameManager.endAttack(currentState.currentPlayer)
+            } else {
+                gameManager.endTurn()
+            }
+        } catch (ex: Exception) {
+            return messageService.convert(currentState, ex.message)
+        }
+        return messageService.convert(gameManager.getGameState())
+    }
+
+    @PostMapping("/fortify")
+    fun attack(@RequestBody fortify: Fortify): GameVM {
+        val currentState = gameManager.getGameState()
+        try {
+            gameManager.fortify(currentState.currentPlayer, fortify.from, fortify.to, fortify.units)
+        } catch (ex: Exception) {
+            return messageService.convert(currentState, ex.message)
+        }
+        return messageService.convert(gameManager.getGameState())
+    }
+
 }

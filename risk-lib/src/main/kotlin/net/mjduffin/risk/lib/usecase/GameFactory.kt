@@ -17,8 +17,8 @@ object GameFactory {
     private const val ONTARIO = "ontario"
     private const val QUEBEC = "quebec"
     private const val WESTERN_US = "western-us"
-    private const val EASTERN_US = "eastern_us"
-    private const val CENTRAL = "central"
+    private const val EASTERN_US = "eastern-us"
+    private const val CENTRAL_AMERICA = "central"
     private const val VENEZUELA = "venezuela"
     private const val BRAZIL = "brazil"
     private const val PERU = "peru"
@@ -26,15 +26,17 @@ object GameFactory {
     private const val GREAT_BRITAIN = "great-britain"
     private const val ICELAND = "iceland"
     private const val SCANDANAVIA = "scandanavia"
-    private const val NORTHERN = "northern-europe"
-    private const val SOUTHERN = "soutern-europe"
+    private const val NORTHERN_EUROPE = "northern-europe"
+    private const val SOUTHERN_EUROPE = "southern-europe"
     private const val WESTERN_EUROPE = "western-europe"
     private const val UKRAINE = "ukraine"
+    private const val NORTH_AFRICA = "north-africa"
     private const val EGYPT = "egypt"
-    private const val EAST = "east-africa"
+    private const val EAST_AFRICA = "east-africa"
     private const val CONGO = "congo"
-    private const val SOUTH = "south-africa"
+    private const val SOUTH_AFRICA = "south-africa"
     private const val MADAGASCAR = "madagascar"
+    private const val URAL = "ural"
     private const val SIBERIA = "siberia"
     private const val YAKUTSK = "yakutsk"
     private const val KAMCHATKA = "kamchatka"
@@ -90,20 +92,171 @@ object GameFactory {
     @JvmStatic
     fun mainGame(): GameManager {
         val gameBuilder = Game.Builder()
-        gameBuilder.addPlayerWithTerritories("Alice", listOf(INDONESIA, NEW_GUINEA))
-        gameBuilder.addPlayerWithTerritories("Bob", listOf(WESTERN_AUS, EASTERN_AUS))
+        val players = mutableListOf("Matt", "Rachel", "Liz")
+        players.shuffle()
         val australasia = Continent("australasia", 2)
+        val southAmerica = Continent("south-america", 2)
+        val africa = Continent("africa", 3)
+        val europe = Continent("europe", 5)
+        val northAmerica = Continent("north-america", 5)
+        val asia = Continent("asia", 7)
         val board = Board.Builder()
             .addEdge(INDONESIA, NEW_GUINEA)
             .addEdge(INDONESIA, WESTERN_AUS)
             .addEdge(WESTERN_AUS, EASTERN_AUS)
             .addEdge(WESTERN_AUS, NEW_GUINEA)
             .addEdge(EASTERN_AUS, NEW_GUINEA)
+            .addEdge(INDONESIA, SIAM)
+
+            .addEdge(SIAM, CHINA)
+            .addEdge(SIAM, INDIA)
+            .addEdge(CHINA, INDIA)
+            .addEdge(MIDDLE_EAST, INDIA)
+            .addEdge(MIDDLE_EAST, AFGHANISTAN)
+            .addEdge(INDIA, AFGHANISTAN)
+            .addEdge(CHINA, AFGHANISTAN)
+            .addEdge(CHINA, URAL)
+            .addEdge(CHINA, SIBERIA)
+            .addEdge(CHINA, MONGOLIA)
+            .addEdge(AFGHANISTAN, URAL)
+            .addEdge(SIBERIA, URAL)
+            .addEdge(SIBERIA, MONGOLIA)
+            .addEdge(IRKUTSK, MONGOLIA)
+            .addEdge(JAPAN, MONGOLIA)
+            .addEdge(JAPAN, KAMCHATKA)
+            .addEdge(KAMCHATKA, IRKUTSK)
+            .addEdge(KAMCHATKA, YAKUTSK)
+            .addEdge(KAMCHATKA, MONGOLIA)
+            .addEdge(SIBERIA, YAKUTSK)
+            .addEdge(IRKUTSK, YAKUTSK)
+            .addEdge(IRKUTSK, SIBERIA)
+
+            .addEdge(UKRAINE, URAL)
+            .addEdge(UKRAINE, AFGHANISTAN)
+            .addEdge(UKRAINE, MIDDLE_EAST)
+            .addEdge(SOUTHERN_EUROPE, MIDDLE_EAST)
+            .addEdge(SOUTHERN_EUROPE, EGYPT)
+            .addEdge(SOUTHERN_EUROPE, NORTH_AFRICA)
+            .addEdge(WESTERN_EUROPE, NORTH_AFRICA)
+            .addEdge(WESTERN_EUROPE, GREAT_BRITAIN)
+            .addEdge(WESTERN_EUROPE, SOUTHERN_EUROPE)
+            .addEdge(WESTERN_EUROPE, NORTHERN_EUROPE)
+            .addEdge(SOUTHERN_EUROPE, NORTHERN_EUROPE)
+            .addEdge(SOUTHERN_EUROPE, UKRAINE)
+            .addEdge(NORTHERN_EUROPE, UKRAINE)
+            .addEdge(NORTHERN_EUROPE, SCANDANAVIA)
+            .addEdge(NORTHERN_EUROPE, GREAT_BRITAIN)
+            .addEdge(GREAT_BRITAIN, ICELAND)
+            .addEdge(GREAT_BRITAIN, SCANDANAVIA)
+            .addEdge(SCANDANAVIA, UKRAINE)
+            .addEdge(SCANDANAVIA, ICELAND)
+
+            .addEdge(EAST_AFRICA, MIDDLE_EAST)
+            .addEdge(NORTH_AFRICA, EGYPT)
+            .addEdge(EAST_AFRICA, EGYPT)
+            .addEdge(MIDDLE_EAST, EGYPT)
+            .addEdge(EAST_AFRICA, NORTH_AFRICA)
+            .addEdge(NORTH_AFRICA, CONGO)
+            .addEdge(EAST_AFRICA, CONGO)
+            .addEdge(EAST_AFRICA, SOUTH_AFRICA)
+            .addEdge(CONGO, SOUTH_AFRICA)
+            .addEdge(EAST_AFRICA, MADAGASCAR)
+            .addEdge(SOUTH_AFRICA, MADAGASCAR)
+            .addEdge(NORTH_AFRICA, BRAZIL)
+
+            .addEdge(VENEZUELA, BRAZIL)
+            .addEdge(PERU, BRAZIL)
+            .addEdge(ARGENTINA, BRAZIL)
+            .addEdge(ARGENTINA, PERU)
+            .addEdge(VENEZUELA, PERU)
+            .addEdge(VENEZUELA, CENTRAL_AMERICA)
+
+            .addEdge(WESTERN_US, CENTRAL_AMERICA)
+            .addEdge(EASTERN_US, CENTRAL_AMERICA)
+            .addEdge(WESTERN_US, EASTERN_US)
+            .addEdge(WESTERN_US, ALBERTA)
+            .addEdge(WESTERN_US, ONTARIO)
+            .addEdge(EASTERN_US, ONTARIO)
+            .addEdge(EASTERN_US, QUEBEC)
+            .addEdge(GREENLAND, QUEBEC)
+            .addEdge(GREENLAND, ONTARIO)
+            .addEdge(GREENLAND, NW_TERRITORY)
+            .addEdge(GREENLAND, ICELAND)
+            .addEdge(ALASKA, ALBERTA)
+            .addEdge(NW_TERRITORY, ALBERTA)
+            .addEdge(ONTARIO, ALBERTA)
+            .addEdge(ONTARIO, QUEBEC)
+            .addEdge(ONTARIO, NW_TERRITORY)
+            .addEdge(NW_TERRITORY, ALASKA)
+            .addEdge(KAMCHATKA, ALASKA)
+
             .addToContinent(australasia, INDONESIA)
             .addToContinent(australasia, NEW_GUINEA)
             .addToContinent(australasia, WESTERN_AUS)
             .addToContinent(australasia, EASTERN_AUS)
+            .addToContinent(asia, SIAM)
+            .addToContinent(asia, INDIA)
+            .addToContinent(asia, MIDDLE_EAST)
+            .addToContinent(asia, AFGHANISTAN)
+            .addToContinent(asia, CHINA)
+            .addToContinent(asia, URAL)
+            .addToContinent(asia, SIBERIA)
+            .addToContinent(asia, IRKUTSK)
+            .addToContinent(asia, YAKUTSK)
+            .addToContinent(asia, KAMCHATKA)
+            .addToContinent(asia, JAPAN)
+            .addToContinent(asia, MONGOLIA)
+
+            .addToContinent(europe, UKRAINE)
+            .addToContinent(europe, SOUTHERN_EUROPE)
+            .addToContinent(europe, WESTERN_EUROPE)
+            .addToContinent(europe, NORTHERN_EUROPE)
+            .addToContinent(europe, GREAT_BRITAIN)
+            .addToContinent(europe, SCANDANAVIA)
+            .addToContinent(europe, ICELAND)
+
+            .addToContinent(africa, NORTH_AFRICA)
+            .addToContinent(africa, EGYPT)
+            .addToContinent(africa, EAST_AFRICA)
+            .addToContinent(africa, CONGO)
+            .addToContinent(africa, SOUTH_AFRICA)
+            .addToContinent(africa, MADAGASCAR)
+
+            .addToContinent(southAmerica, ARGENTINA)
+            .addToContinent(southAmerica, PERU)
+            .addToContinent(southAmerica, BRAZIL)
+            .addToContinent(southAmerica, VENEZUELA)
+
+            .addToContinent(northAmerica, CENTRAL_AMERICA)
+            .addToContinent(northAmerica, EASTERN_US)
+            .addToContinent(northAmerica, WESTERN_US)
+            .addToContinent(northAmerica, ALBERTA)
+            .addToContinent(northAmerica, ONTARIO)
+            .addToContinent(northAmerica, QUEBEC)
+            .addToContinent(northAmerica, ALASKA)
+            .addToContinent(northAmerica, NW_TERRITORY)
+            .addToContinent(northAmerica, GREENLAND)
+
             .build()
+
+        val territories = board.allTerritories().map { it.name }.toMutableList()
+        territories.shuffle()
+        val pmap = mutableMapOf<String, List<String>>()
+        var count = 0
+        while (territories.isNotEmpty()) {
+            val t = territories.removeFirst()
+            val playerIndex = count % players.size
+            val player = players[playerIndex]
+
+            val current = pmap[player] ?: listOf()
+            pmap[player] = current + t
+            count++
+        }
+
+        for ((k, v) in pmap) {
+            gameBuilder.addPlayerWithTerritories(k, v)
+        }
+
         val game = gameBuilder.build()
         val dieThrow: DieThrow = RandomDieThrow()
         val diceManager = DiceManager(dieThrow)

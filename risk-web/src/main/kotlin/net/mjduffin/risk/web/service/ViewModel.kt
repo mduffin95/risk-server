@@ -1,3 +1,9 @@
 package net.mjduffin.risk.web.service
 
-data class TerritoryVM(val name: String, val top: Int, val left: Int, val color: String, val units: Int)
+data class GameVM(val currentPlayer: String, val phase: String, val unitsToPlace: Int, val territories: List<TerritoryVM>, val error: String?)
+
+data class TerritoryVM(val name: String, val top: Int, val left: Int, val player: String, val color: String, val units: Int)
+
+data class Draft(val territory: String)
+data class Attack(val from: String, val to: String)
+data class Move(val units: Int)

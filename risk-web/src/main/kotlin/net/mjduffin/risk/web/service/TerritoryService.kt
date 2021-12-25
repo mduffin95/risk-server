@@ -58,25 +58,27 @@ class TerritoryService {
     val colors = listOf("red", "blue", "green", "violet", "orange", "magenta", "yellow")
     private var players: MutableMap<String, String> = mutableMapOf();
 
-    fun convert(gameState: GameState): List<TerritoryVM> {
+    fun convert(gameState: GameState, errorMessage: String? = null): GameVM {
         if (players.isEmpty()) {
             val distinctPlayers = gameState.occupyingPlayers.distinct().toList()
             for (i in distinctPlayers.indices) {
                 players[distinctPlayers[i]] = colors[i]
             }
         }
-        return gameState.territories.indices.map {
+        val territories = gameState.territories.indices.map {
             toTerritoryVM(
                 gameState.territories[it],
                 gameState.occupyingPlayers[it],
                 gameState.units[it],
             )
         }
+
+        return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories, errorMessage)
     }
 
     private fun toTerritoryVM(territory: String, player: String, units: Int): TerritoryVM {
         val point = positionsMap[territory] ?: throw IllegalArgumentException("Missing $territory position")
         val color = players[player] ?: throw IllegalArgumentException("Missing color for $player")
-        return TerritoryVM(territory, point.first, point.second, color, units)
+        return TerritoryVM(territory, point.first, point.second, player, color, units)
     }
 }

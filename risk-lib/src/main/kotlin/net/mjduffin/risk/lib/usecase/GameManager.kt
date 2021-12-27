@@ -1,9 +1,6 @@
 package net.mjduffin.risk.lib.usecase
 
 import net.mjduffin.risk.lib.entities.*
-import net.mjduffin.risk.lib.usecase.request.*
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
 
 
 class GameManager internal constructor(
@@ -11,13 +8,8 @@ class GameManager internal constructor(
     private var game: Game,
     private val diceManager: DiceManager
 ) :
-    PlayerInput,
-    StateChangeObserver,
-    PlayerChangeObserver,
-    RequestAcceptor {
+    PlayerInput {
 
-    private val requestQueue: BlockingQueue<Request> = LinkedBlockingQueue()
-    private var output: PlayerOutput? = null
     private var lastAttackingTerritory: TerritoryId? = null
     private var lastAttackingUnitCount = 0
     private var lastDefendingTerritory: TerritoryId? = null
@@ -52,36 +44,6 @@ class GameManager internal constructor(
     private fun areSamePlayer(player: PlayerId, territory: TerritoryId): Boolean {
         val p = game.getPlayerForTerritory(territory)
         return p == player
-    }
-
-    private fun processRequest(request: Request) {
-        when (request) {
-            is DraftRequest -> {
-                draftSingle(request.player, request.territory, request.units)
-            }
-            is AttackRequest -> {
-                attack(request.player, request.attacker, request.defender)
-            }
-            is MoveRequest -> {
-                move(request.playerName, request.units)
-            }
-            is EndAttackRequest -> {
-                endAttack(request.playerName)
-            }
-            is FortifyRequest -> {
-                fortify(
-                    request.playerName,
-                    request.fromTerritory,
-                    request.toTerritory,
-                    request.units
-                )
-            }
-            is SkipFortifyRequest -> endTurn()
-        }
-    }
-
-    override fun registerPlayerOutput(output: PlayerOutput) {
-        this.output = output
     }
 
     //Must be called with entire draft at once
@@ -241,7 +203,7 @@ class GameManager internal constructor(
         }
     }
 
-    override fun getGameState(): GameState {
+    fun getGameState(): GameState {
         val territories: List<TerritoryId> = board.allTerritories().toList()
         val occupyingPlayers = territories.map { game.getPlayerForTerritory(it).name }
         val gameState = GameState(
@@ -258,38 +220,5 @@ class GameManager internal constructor(
     fun endTurn() {
         game = game.nextPlayer(board)
         game = game.nextState()
-    }
-
-    fun start() {
-        while (game.state != Game.State.END) {
-            val gameState = getGameState()
-            output?.turn(gameState)
-            //TODO: wait to pull request off queue
-            val r = requestQueue.take()
-            try {
-                processRequest(r)
-            } catch (e: GameplayException) {
-                System.err.println(e.message)
-            }
-        }
-        System.out.printf("Game has ended, %s has won!", getGameState().occupyingPlayers[0])
-    }
-
-    override fun notify(oldPlayer: PlayerId, newPlayer: PlayerId) {
-        // New player's go
-    }
-
-    override fun notify(oldState: Game.State, newState: Game.State) {
-        println("New state: $newState")
-    }
-
-    override fun receiveRequest(request: Request) {
-        requestQueue.add(request)
-    }
-
-    init {
-        //Game is fully populated
-//        game.registerPlayerChangeObserver(this)
-//        game.registerStateChangeObserver(this)
     }
 }

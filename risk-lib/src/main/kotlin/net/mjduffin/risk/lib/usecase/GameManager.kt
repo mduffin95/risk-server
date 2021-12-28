@@ -60,12 +60,12 @@ class GameManager internal constructor(
             draftUnits(territoryId, player, units)
         }
         if (game.state === Game.State.ALLDRAFT) {
-            game = game.nextPlayer(board)
+            game = game.nextPlayer()
             if (game.isFirstPlayer) {
-                game = game.nextState()
+                game = game.nextState(board)
             }
         } else if (game.state === Game.State.DRAFT && finishedDrafting(player)) {
-            game = game.nextState()
+            game = game.nextState(board)
         }
     }
 
@@ -79,13 +79,13 @@ class GameManager internal constructor(
         draftUnits(territoryId, player, units)
         if (game.state === Game.State.ALLDRAFT) {
             if (finishedDrafting(player)) {
-                game = game.nextPlayer(board)
+                game = game.nextPlayer()
                 if (game.isFirstPlayer) {
-                    game = game.nextState()
+                    game = game.nextState(board)
                 }
             }
         } else if (game.state === Game.State.DRAFT && finishedDrafting(player)) {
-            game = game.nextState()
+            game = game.nextState(board)
         }
     }
 
@@ -120,7 +120,7 @@ class GameManager internal constructor(
             val defendingPlayer = game.getPlayerForTerritory(defender)
             game = game
                 .setOwner(defendingPlayer, attackingPlayer, defender)
-                .nextState()
+                .nextState(board)
         }
         return result
     }
@@ -175,7 +175,7 @@ class GameManager internal constructor(
         } else {
             throw GameplayException("Players are not the same")
         }
-        game = game.nextState()
+        game = game.nextState(board)
     }
 
     override fun fortify(playerName: String, fromTerritory: String, toTerritory: String, units: Int) {
@@ -218,7 +218,7 @@ class GameManager internal constructor(
     }
 
     fun endTurn() {
-        game = game.nextPlayer(board)
-        game = game.nextState()
+        game = game.nextPlayer()
+        game = game.nextState(board)
     }
 }

@@ -90,9 +90,12 @@ object GameFactory {
     }
 
     @JvmStatic
-    fun mainGame(): GameManager {
+    fun mainGame() = mainGame(listOf("Liz", "Rachel", "Matt"))
+
+    @JvmStatic
+    fun mainGame(originalPlayers: List<String>): GameManager {
         val gameBuilder = Game.Builder()
-        val players = mutableListOf("Matt", "Rachel", "Liz")
+        val players = originalPlayers.toMutableList()
         players.shuffle()
         val australasia = Continent("australasia", 2)
         val southAmerica = Continent("south-america", 2)

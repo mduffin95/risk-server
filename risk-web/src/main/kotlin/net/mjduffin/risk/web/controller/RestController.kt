@@ -1,22 +1,32 @@
 package net.mjduffin.risk.web.controller
 
+import net.mjduffin.risk.lib.usecase.GameFactory
 import net.mjduffin.risk.lib.usecase.GameManager
 import net.mjduffin.risk.web.service.*
+import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("api")
-class RestController(val messageService: TerritoryService, val gameManager: GameManager) {
+class RestController(val messageService: TerritoryService, val gameFactory: GameFactory) {
 
-    @GetMapping("/game")
-    fun game(): GameVM {
-        val gameState = gameManager.getGameState()
-        return messageService.convert(gameState)
+    private val containers: MutableMap<String, GameContainer> = mutableMapOf()
+
+    fun getGameManager(id: String): GameManager? {
+        val container = containers[id] ?: return null
+        return container.getGameManager()
     }
 
-    @PostMapping("/draft")
-    fun draft(@RequestBody draft: Draft): GameVM {
+    @GetMapping("/{id}/game")
+    fun game(@PathVariable("id") id: String): GameVM {
+        val gameState = getGameManager(id)?.getGameState()
+        return gameState?.let { messageService.convert(it) } ?: messageService.error("No game found for $id")
+    }
+
+    @PostMapping("/{id}/draft")
+    fun draft(@PathVariable("id") id: String, @RequestBody draft: Draft): GameVM {
+        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.draftSingle(currentState.currentPlayer, draft.territory, 1)
@@ -26,8 +36,9 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
-    @PostMapping("/attack")
-    fun attack(@RequestBody attack: Attack): GameVM {
+    @PostMapping("/{id}/attack")
+    fun attack(@PathVariable("id") id: String, @RequestBody attack: Attack): GameVM {
+        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.attack(currentState.currentPlayer, attack.from, attack.to)
@@ -37,8 +48,9 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
-    @PostMapping("/move")
-    fun move(@RequestBody move: Move): GameVM {
+    @PostMapping("/{id}/move")
+    fun move(@PathVariable("id") id: String, @RequestBody move: Move): GameVM {
+        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.move(currentState.currentPlayer, move.units)
@@ -48,8 +60,9 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
-    @GetMapping("/end")
-    fun end(): GameVM {
+    @GetMapping("/{id}/end")
+    fun end(@PathVariable("id") id: String): GameVM {
+        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             if (currentState.phase.equals("ATTACK")) {
@@ -63,8 +76,9 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
-    @PostMapping("/fortify")
-    fun attack(@RequestBody fortify: Fortify): GameVM {
+    @PostMapping("/{id}/fortify")
+    fun attack(@PathVariable("id") id: String, @RequestBody fortify: Fortify): GameVM {
+        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.fortify(currentState.currentPlayer, fortify.from, fortify.to, fortify.units)
@@ -74,4 +88,49 @@ class RestController(val messageService: TerritoryService, val gameManager: Game
         return messageService.convert(gameManager.getGameState())
     }
 
+    @GetMapping("/newgame")
+    fun newGame(): String {
+        val id = RandomStringUtils.random(6, true, false)!!.uppercase()
+
+        containers[id] = GameContainer(mutableListOf(), gameFactory)
+
+        return id
+    }
+
+    @PostMapping("/{id}/join")
+    fun join(@PathVariable("id") id: String, @RequestBody join: Join): LobbyVM {
+
+        val gameContainer = containers[id]
+
+        gameContainer?.addPlayer(join.player)
+
+        return LobbyVM(gameContainer?.players ?: listOf(), null)
+    }
+
+    @GetMapping("/{id}/start")
+    fun start(@PathVariable("id") id: String): GameVM {
+
+        val gameContainer = containers[id]
+
+        val gameManager = gameContainer?.startGame()?.getGameManager()!!
+
+        return messageService.convert(gameManager.getGameState())
+    }
+
+    class GameContainer(val players: MutableList<String>, val gameFactory: GameFactory) {
+
+        private var manager: GameManager? = null
+
+        fun getGameManager(): GameManager? {
+            return manager
+        }
+
+        fun addPlayer(player: String) = apply {
+            players.add(player)
+        }
+
+        fun startGame() = apply {
+            manager = gameFactory.mainGame(players)
+        }
+    }
 }

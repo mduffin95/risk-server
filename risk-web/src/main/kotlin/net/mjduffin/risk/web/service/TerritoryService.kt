@@ -76,6 +76,10 @@ class TerritoryService {
         return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories, errorMessage)
     }
 
+    fun error(errorMessage: String): GameVM {
+        return GameVM("", "", 0, listOf(), errorMessage)
+    }
+
     private fun toTerritoryVM(territory: String, player: String, units: Int): TerritoryVM {
         val point = positionsMap[territory] ?: throw IllegalArgumentException("Missing $territory position")
         val color = players[player] ?: throw IllegalArgumentException("Missing color for $player")

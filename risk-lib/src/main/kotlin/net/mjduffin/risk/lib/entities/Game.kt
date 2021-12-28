@@ -45,7 +45,7 @@ class Game private constructor(
     enum class State {
         ALLDRAFT {
             override fun nextState(): State {
-                return ATTACK
+                return DRAFT
             }
         },
         DRAFT {
@@ -77,7 +77,7 @@ class Game private constructor(
         abstract fun nextState(): State
     }
 
-    fun nextPlayer(board: Board): Game {
+    fun nextPlayer(): Game {
         val index = players.indexOf(currentPlayer)
         val newIndex = (index + 1) % players.size
         if (newIndex == index) {
@@ -85,10 +85,7 @@ class Game private constructor(
             // so it doesn't make sense to re-calculate the draft
             return this
         }
-        // calculate new draft
-        val draft = players.map { it to calculateDraft(it, board) }.toMap()
-
-        return Game(players, playerTerritories, territoryUnits, players[newIndex], state, draft)
+        return Game(players, playerTerritories, territoryUnits, players[newIndex], state, draftRemaining)
     }
 
     val isFirstPlayer: Boolean
@@ -103,14 +100,17 @@ class Game private constructor(
         throw PlayerNotFoundException()
     }
 
-    fun nextState(): Game {
+    fun nextState(board: Board): Game {
         val hasEnded = playerTerritories.keys.size == 1
         val next = if (hasEnded) State.END else state.nextState()
-        return goToState(next)
+        val draft = if (next === State.DRAFT) players.map { it to calculateDraft(it, board, next) }.toMap() else draftRemaining
+        return goToState(next, draft)
     }
 
-    fun goToState(newState: State): Game {
-        return Game(players, playerTerritories, territoryUnits, currentPlayer, newState, draftRemaining)
+    fun goToState(newState: State): Game = goToState(newState, draftRemaining)
+
+    fun goToState(newState: State, draft: Map<PlayerId, Int>): Game {
+        return Game(players, playerTerritories, territoryUnits, currentPlayer, newState, draft)
     }
 
     private fun totalTerritories(playerId: PlayerId): Int = playerTerritories[playerId]?.size ?: 0
@@ -121,8 +121,8 @@ class Game private constructor(
         return draftRemaining[playerId] ?: throw PlayerNotFoundException()
     }
 
-    private fun calculateDraft(playerId: PlayerId, board: Board): Int {
-        return if (State.ALLDRAFT == state) {
+    private fun calculateDraft(playerId: PlayerId, board: Board, nextState: State): Int {
+        return if (State.ALLDRAFT == nextState) {
             10
         } else {
             var territoryBonus = totalTerritories(playerId) / 3

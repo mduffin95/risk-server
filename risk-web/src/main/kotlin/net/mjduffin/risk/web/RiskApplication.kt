@@ -1,7 +1,6 @@
 package net.mjduffin.risk.web
 
 import net.mjduffin.risk.lib.usecase.GameFactory
-import net.mjduffin.risk.lib.usecase.GameManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -21,10 +20,8 @@ fun main(args: Array<String>) {
 @Configuration
 open class GameConfiguration {
     @Bean
-    open fun gameManager(): GameManager {
-        val basicGame = GameFactory.mainGame()
-//        basicGame.start()
-        return basicGame
+    open fun gameManager(): GameFactory {
+        return GameFactory
     }
 
     @Value("\${cors.originPatterns:default}")

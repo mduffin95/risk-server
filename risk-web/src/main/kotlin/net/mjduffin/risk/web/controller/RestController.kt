@@ -6,10 +6,13 @@ import net.mjduffin.risk.web.service.*
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
+
+val colors = listOf("red", "blue", "green", "violet", "orange", "magenta", "yellow")
 
 @RestController
 @RequestMapping("api")
-class RestController(val messageService: TerritoryService, val gameFactory: GameFactory) {
+class RestController(val territoryService: TerritoryService, val gameFactory: GameFactory) {
 
     private val containers: MutableMap<String, GameContainer> = mutableMapOf()
 
@@ -20,49 +23,49 @@ class RestController(val messageService: TerritoryService, val gameFactory: Game
 
     @GetMapping("/{id}/game")
     fun game(@PathVariable("id") id: String): GameVM {
-        val gameState = getGameManager(id)?.getGameState()
-        return gameState?.let { messageService.convert(it) } ?: messageService.error("No game found for $id")
+        return containers[id]?.convert() ?: territoryService.error("No game found for $id")
     }
 
     @PostMapping("/{id}/draft")
     fun draft(@PathVariable("id") id: String, @RequestBody draft: Draft): GameVM {
-        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
+        val container = containers[id] ?: return territoryService.error("No game found for $id")
+        val gameManager = getGameManager(id) ?: return territoryService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.draftSingle(currentState.currentPlayer, draft.territory, 1)
         } catch (ex: Exception) {
-            return messageService.convert(currentState, ex.message)
         }
-        return messageService.convert(gameManager.getGameState())
+        return container.convert()
     }
 
     @PostMapping("/{id}/attack")
     fun attack(@PathVariable("id") id: String, @RequestBody attack: Attack): GameVM {
-        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
+        val container = containers[id] ?: return territoryService.error("No game found for $id")
+        val gameManager = getGameManager(id) ?: return territoryService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.attack(currentState.currentPlayer, attack.from, attack.to)
         } catch (ex: Exception) {
-            return messageService.convert(currentState, ex.message)
         }
-        return messageService.convert(gameManager.getGameState())
+        return container.convert()
     }
 
     @PostMapping("/{id}/move")
     fun move(@PathVariable("id") id: String, @RequestBody move: Move): GameVM {
-        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
+        val container = containers[id] ?: return territoryService.error("No game found for $id")
+        val gameManager = getGameManager(id) ?: return territoryService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.move(currentState.currentPlayer, move.units)
         } catch (ex: Exception) {
-            return messageService.convert(currentState, ex.message)
         }
-        return messageService.convert(gameManager.getGameState())
+        return container.convert()
     }
 
     @GetMapping("/{id}/end")
     fun end(@PathVariable("id") id: String): GameVM {
-        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
+        val container = containers[id] ?: return territoryService.error("No game found for $id")
+        val gameManager = container.getGameManager()
         val currentState = gameManager.getGameState()
         try {
             if (currentState.phase.equals("ATTACK")) {
@@ -71,28 +74,27 @@ class RestController(val messageService: TerritoryService, val gameFactory: Game
                 gameManager.endTurn()
             }
         } catch (ex: Exception) {
-            return messageService.convert(currentState, ex.message)
         }
-        return messageService.convert(gameManager.getGameState())
+        return container.convert()
     }
 
     @PostMapping("/{id}/fortify")
     fun attack(@PathVariable("id") id: String, @RequestBody fortify: Fortify): GameVM {
-        val gameManager = getGameManager(id) ?: return messageService.error("No game found for $id")
+        val container = containers[id] ?: return territoryService.error("No game found for $id")
+        val gameManager = getGameManager(id) ?: return territoryService.error("No game found for $id")
         val currentState = gameManager.getGameState()
         try {
             gameManager.fortify(currentState.currentPlayer, fortify.from, fortify.to, fortify.units)
         } catch (ex: Exception) {
-            return messageService.convert(currentState, ex.message)
         }
-        return messageService.convert(gameManager.getGameState())
+        return container.convert()
     }
 
     @GetMapping("/newgame")
     fun newGame(): String {
         val id = RandomStringUtils.random(6, true, false)!!.uppercase()
 
-        containers[id] = GameContainer(mutableListOf(), gameFactory)
+        containers[id] = GameContainer(gameFactory, territoryService)
 
         return id
     }
@@ -104,33 +106,91 @@ class RestController(val messageService: TerritoryService, val gameFactory: Game
 
         gameContainer?.addPlayer(join.player)
 
-        return LobbyVM(gameContainer?.players ?: listOf(), null)
+        return LobbyVM(gameContainer?.players ?: listOf(), false,null)
+    }
+
+    @PostMapping("/{id}/lobby")
+    fun lobby(@PathVariable("id") id: String, @RequestBody lobby: LobbyVM): LobbyVM {
+
+        val start = System.nanoTime()
+
+        var newLobbyVM = lobby
+        while (TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.MILLISECONDS) < 3_000_000) {
+            Thread.sleep(100)
+            val gameContainer = containers[id]
+            newLobbyVM = LobbyVM(gameContainer?.players ?: listOf(), gameContainer?.hasStarted() ?: false, null)
+            if (newLobbyVM != lobby) {
+                break
+            }
+        }
+        System.out.println("Sending: $id")
+        return newLobbyVM
     }
 
     @GetMapping("/{id}/start")
     fun start(@PathVariable("id") id: String): GameVM {
+        val gameContainer = containers[id]!!
+        gameContainer.startGame()
+        return gameContainer.convert()
+    }
+}
 
-        val gameContainer = containers[id]
 
-        val gameManager = gameContainer?.startGame()?.getGameManager()!!
+class GameContainer(private val gameFactory: GameFactory, private val territoryService: TerritoryService) {
 
-        return messageService.convert(gameManager.getGameState())
+    private var manager: GameManager? = null
+    val players: MutableList<Player> = mutableListOf()
+
+    var count = 0
+
+    fun getGameManager(): GameManager {
+        if (!hasStarted()) {
+            throw IllegalArgumentException("Game not started")
+        } else {
+            return manager!!
+        }
     }
 
-    class GameContainer(val players: MutableList<String>, val gameFactory: GameFactory) {
+    fun addPlayer(name: String) = apply {
+        players.add(Player(name, colors[count++]))
+    }
 
-        private var manager: GameManager? = null
+    fun startGame() = apply {
+        manager = gameFactory.mainGame(players.map { it.name }.toList())
+    }
 
-        fun getGameManager(): GameManager? {
-            return manager
+    fun hasStarted(): Boolean = manager != null
+
+
+    fun convert(): GameVM {
+        if (!hasStarted()) {
+            return error("Game not started")
         }
 
-        fun addPlayer(player: String) = apply {
-            players.add(player)
+        val gameState = manager?.getGameState()!!
+
+        val territories = gameState.territories.indices.map {
+            toTerritoryVM(
+                gameState.territories[it],
+                gameState.occupyingPlayers[it],
+                gameState.units[it],
+            )
         }
 
-        fun startGame() = apply {
-            manager = gameFactory.mainGame(players)
-        }
+        return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories)
+    }
+
+    private fun error(errorMessage: String): GameVM {
+        return GameVM("", "", 0, listOf(), errorMessage)
+    }
+
+    private fun getPlayer(playerName: String): Player {
+        return players.find { it.name == playerName } ?: throw IllegalArgumentException("Missing color for $playerName")
+    }
+
+    private fun toTerritoryVM(territory: String, playerName: String, units: Int): TerritoryVM {
+        val point = territoryService.getPosition(territory)
+        val player = getPlayer(playerName)
+        return TerritoryVM(territory, point.first, point.second, player, units)
     }
 }

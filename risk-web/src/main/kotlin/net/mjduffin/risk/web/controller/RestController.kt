@@ -113,26 +113,18 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @PostMapping("/{id}/game")
     fun game(@PathVariable("id") id: String, @RequestBody clientVm: ActionCount): ViewModel {
-
-        val start = System.nanoTime()
-
-        var newVm = getViewModel(id)
-        while (TimeUnit.SECONDS.convert(System.nanoTime() - start, TimeUnit.MILLISECONDS) < 3_000_000) {
-            val c = containers[id]
-            if (c != null) {
-                newVm = c.toViewModel()
-                if (newVm.actionCount > clientVm.actionCount) {
-                    break
-                } else{
-                    // wait for a bit before trying again
-                    c.waitHundredMillis()
-                }
+        val c = containers[id]
+        return if (c != null) {
+            val vm = c.toViewModel()
+            if (vm.actionCount > clientVm.actionCount) {
+                vm
             } else {
-                return ViewModel(Screen.ERROR, 0, "Container missing for $id")
+                c.waitThreeSeconds()
+                c.toViewModel()
             }
+        } else {
+            ViewModel(Screen.ERROR, 0, "Container missing for $id")
         }
-        System.out.println("Sending: $id")
-        return newVm
     }
 
     @GetMapping("/{id}/start")
@@ -166,8 +158,8 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         }
     }
 
-    fun waitHundredMillis() {
-        lock.withLock { condition.await(100, TimeUnit.MILLISECONDS) }
+    fun waitThreeSeconds() {
+        lock.withLock { condition.await(3, TimeUnit.SECONDS) }
     }
 
     fun increment() {

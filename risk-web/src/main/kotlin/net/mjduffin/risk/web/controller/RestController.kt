@@ -16,7 +16,7 @@ val colors = listOf("red", "blue", "green", "violet", "orange", "magenta", "yell
 
 @RestController
 @RequestMapping("api")
-class RestController(val territoryService: TerritoryService, val gameFactory: GameFactory) {
+class RestController(private val territoryService: TerritoryService, private val gameFactory: GameFactory) {
 
     val log: Logger = LoggerFactory.getLogger(RestController::class.java)
 

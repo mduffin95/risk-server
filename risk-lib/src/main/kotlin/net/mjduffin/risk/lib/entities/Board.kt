@@ -34,7 +34,7 @@ class Board private constructor(
                 return true
             }
             visited.add(id)
-            val unvisited: List<TerritoryId> = getConnected(id).stream().filter { !visited.contains(it) }.toList()
+            val unvisited = getConnected(id).filter { !visited.contains(it) }.toList()
             queue.addAll(unvisited)
         }
         return false

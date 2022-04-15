@@ -4,6 +4,8 @@ import net.mjduffin.risk.lib.usecase.GameFactory
 import net.mjduffin.risk.lib.usecase.GameManager
 import net.mjduffin.risk.web.service.*
 import org.apache.commons.lang3.RandomStringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
@@ -16,6 +18,8 @@ val colors = listOf("red", "blue", "green", "violet", "orange", "magenta", "yell
 @RequestMapping("api")
 class RestController(val territoryService: TerritoryService, val gameFactory: GameFactory) {
 
+    val log: Logger = LoggerFactory.getLogger(RestController::class.java)
+
     private val containers: MutableMap<String, GameContainer> = mutableMapOf()
 
     fun getGameManager(id: String): GameManager? {
@@ -25,6 +29,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @PostMapping("/{id}/draft")
     fun draft(@PathVariable("id") id: String, @RequestBody draft: Draft): Response {
+        log.info("Draft")
         val container = containers[id] ?: return Response("No game found for $id")
         val gameManager = getGameManager(id) ?: return Response("No game found for $id")
         val currentState = gameManager.getGameState()
@@ -38,6 +43,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @PostMapping("/{id}/attack")
     fun attack(@PathVariable("id") id: String, @RequestBody attack: Attack): Response {
+        log.info("Attack")
         val container = containers[id] ?: return Response("No game found for $id")
         val gameManager = getGameManager(id) ?: return Response("No game found for $id")
         val currentState = gameManager.getGameState()
@@ -51,6 +57,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @PostMapping("/{id}/move")
     fun move(@PathVariable("id") id: String, @RequestBody move: Move): Response {
+        log.info("Move")
         val container = containers[id] ?: return Response("No game found for $id")
         val gameManager = getGameManager(id) ?: return Response("No game found for $id")
         val currentState = gameManager.getGameState()
@@ -64,6 +71,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @GetMapping("/{id}/end")
     fun end(@PathVariable("id") id: String): Response {
+        log.info("End turn for {}", id)
         val container = containers[id] ?: return Response("No game found for $id")
         val gameManager = container.getGameManager()
         val currentState = gameManager.getGameState()
@@ -80,7 +88,8 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
     }
 
     @PostMapping("/{id}/fortify")
-    fun attack(@PathVariable("id") id: String, @RequestBody fortify: Fortify): Response {
+    fun fortify(@PathVariable("id") id: String, @RequestBody fortify: Fortify): Response {
+        log.info("Fortfiy {}", id)
         val container = containers[id] ?: return Response("No game found for $id")
         val gameManager = getGameManager(id) ?: return Response("No game found for $id")
         val currentState = gameManager.getGameState()
@@ -94,6 +103,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @GetMapping("/newgame")
     fun newGame(): String {
+        log.info("Start new game")
         val id = RandomStringUtils.random(6, true, false)!!.uppercase()
 
         containers[id] = GameContainer(gameFactory, territoryService)
@@ -103,7 +113,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @PostMapping("/{id}/join")
     fun join(@PathVariable("id") id: String, @RequestBody join: Join): Response {
-
+        log.info("New player {} joined game {}", join.player, id)
         val gameContainer = containers[id]
 
         gameContainer?.addPlayer(join.player)
@@ -129,6 +139,7 @@ class RestController(val territoryService: TerritoryService, val gameFactory: Ga
 
     @GetMapping("/{id}/start")
     fun start(@PathVariable("id") id: String): Response {
+        log.info("Start game {}", id)
         val gameContainer = containers[id]!!
         gameContainer.startGame()
         return Response(null)

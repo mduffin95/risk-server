@@ -27,11 +27,11 @@ class RestController(private val territoryService: TerritoryService, private val
         return container.getGameManager()
     }
 
-    @PostMapping("/{id}/draft")
-    fun draft(@PathVariable("id") id: String, @RequestBody draft: Draft): Response {
+    @PostMapping("/games/{gameId}/turn/draft")
+    private fun draft(@PathVariable("gameId") gameId: String, @RequestBody draft: Draft): Response {
         log.info("Draft")
-        val container = containers[id] ?: return Response("No game found for $id")
-        val gameManager = getGameManager(id) ?: return Response("No game found for $id")
+        val container = containers[gameId] ?: return Response("No game found for $gameId")
+        val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
         val currentState = gameManager.getGameState()
         try {
             gameManager.draftSingle(currentState.currentPlayer, draft.territory, 1)
@@ -41,11 +41,11 @@ class RestController(private val territoryService: TerritoryService, private val
         return Response(null)
     }
 
-    @PostMapping("/{id}/attack")
-    fun attack(@PathVariable("id") id: String, @RequestBody attack: Attack): Response {
+    @PostMapping("/games/{gameId}/turn/attack")
+    private fun attack(@PathVariable("gameId") gameId: String, @RequestBody attack: Attack): Response {
         log.info("Attack")
-        val container = containers[id] ?: return Response("No game found for $id")
-        val gameManager = getGameManager(id) ?: return Response("No game found for $id")
+        val container = containers[gameId] ?: return Response("No game found for $gameId")
+        val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
         val currentState = gameManager.getGameState()
         try {
             gameManager.attack(currentState.currentPlayer, attack.from, attack.to)
@@ -55,11 +55,11 @@ class RestController(private val territoryService: TerritoryService, private val
         return Response(null)
     }
 
-    @PostMapping("/{id}/move")
-    fun move(@PathVariable("id") id: String, @RequestBody move: Move): Response {
+    @PostMapping("/games/{gameId}/turn/move")
+    fun move(@PathVariable("gameId") gameId: String, @RequestBody move: Move): Response {
         log.info("Move")
-        val container = containers[id] ?: return Response("No game found for $id")
-        val gameManager = getGameManager(id) ?: return Response("No game found for $id")
+        val container = containers[gameId] ?: return Response("No game found for $gameId")
+        val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
         val currentState = gameManager.getGameState()
         try {
             gameManager.move(currentState.currentPlayer, move.units)
@@ -69,10 +69,10 @@ class RestController(private val territoryService: TerritoryService, private val
         return Response(null)
     }
 
-    @GetMapping("/{id}/end")
-    fun end(@PathVariable("id") id: String): Response {
-        log.info("End turn for {}", id)
-        val container = containers[id] ?: return Response("No game found for $id")
+    @PostMapping("/games/{gameId}/turn/end")
+    private fun end(@PathVariable("gameId") gameId: String): Response {
+        log.info("End turn for {}", gameId)
+        val container = containers[gameId] ?: return Response("No game found for $gameId")
         val gameManager = container.getGameManager()
         val currentState = gameManager.getGameState()
         try {
@@ -87,11 +87,11 @@ class RestController(private val territoryService: TerritoryService, private val
         return Response(null)
     }
 
-    @PostMapping("/{id}/fortify")
-    fun fortify(@PathVariable("id") id: String, @RequestBody fortify: Fortify): Response {
-        log.info("Fortfiy {}", id)
-        val container = containers[id] ?: return Response("No game found for $id")
-        val gameManager = getGameManager(id) ?: return Response("No game found for $id")
+    @PostMapping("/games/{gameId}/turn/fortify")
+    private fun fortify(@PathVariable("gameId") gameId: String, @RequestBody fortify: Fortify): Response {
+        log.info("Fortfiy {}", gameId)
+        val container = containers[gameId] ?: return Response("No game found for $gameId")
+        val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
         val currentState = gameManager.getGameState()
         try {
             gameManager.fortify(currentState.currentPlayer, fortify.from, fortify.to, fortify.units)
@@ -101,8 +101,8 @@ class RestController(private val territoryService: TerritoryService, private val
         return Response(null)
     }
 
-    @GetMapping("/newgame")
-    fun newGame(): String {
+    @PostMapping("/games")
+    private fun newGame(): String {
         log.info("Start new game")
         val id = RandomStringUtils.random(6, true, false)!!.uppercase()
 
@@ -111,36 +111,36 @@ class RestController(private val territoryService: TerritoryService, private val
         return id
     }
 
-    @PostMapping("/{id}/join")
-    fun join(@PathVariable("id") id: String, @RequestBody join: Join): Response {
-        log.info("New player {} joined game {}", join.player, id)
-        val gameContainer = containers[id]
+    @PutMapping("/games/{gameId}/players/{playerName}")
+    fun join(@PathVariable("gameId") gameId: String, @PathVariable("playerName") playerName: String): Response {
+        log.info("New player {} joined game {}", playerName, gameId)
+        val gameContainer = containers[gameId]
 
-        gameContainer?.addPlayer(join.player)
+        gameContainer?.addPlayer(playerName)
 
         return Response(null)
     }
 
-    @PostMapping("/{id}/game")
-    fun game(@PathVariable("id") id: String, @RequestBody clientVm: ActionCount): ViewModel {
-        val c = containers[id]
+    @GetMapping("/games/{gameId}/game/{count}")
+    fun game(@PathVariable("gameId") gameId: String, @PathVariable("count") count: Int): ViewModel {
+        val c = containers[gameId]
         return if (c != null) {
             val vm = c.toViewModel()
-            if (vm.actionCount > clientVm.actionCount) {
+            if (vm.actionCount > count) {
                 vm
             } else {
                 c.waitThreeSeconds()
                 c.toViewModel()
             }
         } else {
-            ViewModel(Screen.ERROR, 0, "Container missing for $id")
+            ViewModel(Screen.ERROR, 0, "Container missing for $gameId")
         }
     }
 
-    @GetMapping("/{id}/start")
-    fun start(@PathVariable("id") id: String): Response {
-        log.info("Start game {}", id)
-        val gameContainer = containers[id]!!
+    @PostMapping("/games/{gameId}/start")
+    fun start(@PathVariable("gameId") gameId: String): Response {
+        log.info("Start game {}", gameId)
+        val gameContainer = containers[gameId]!!
         gameContainer.startGame()
         return Response(null)
     }

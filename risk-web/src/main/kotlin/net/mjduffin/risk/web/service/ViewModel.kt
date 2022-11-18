@@ -8,7 +8,6 @@ enum class Screen {
 }
 
 data class ViewModel(val screen: Screen, val actionCount: Int, val model: Any)
-data class ActionCount(val actionCount: Int)
 
 data class GameVM(val currentPlayer: String, val phase: String, val unitsToPlace: Int, val territories: List<TerritoryVM>, val error: String? = null)
 data class LobbyVM(val players: List<Player>)
@@ -21,4 +20,3 @@ data class Draft(val territory: String)
 data class Attack(val from: String, val to: String)
 data class Fortify(val from: String, val to: String, val units: Int)
 data class Move(val units: Int)
-data class Join(val player: String)

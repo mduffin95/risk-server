@@ -112,13 +112,10 @@ class RestController(private val territoryService: TerritoryService, private val
     }
 
     @PutMapping("/games/{gameId}/players/{playerName}")
-    fun join(@PathVariable("gameId") gameId: String, @PathVariable("playerName") playerName: String): Response {
+    fun join(@PathVariable("gameId") gameId: String, @PathVariable("playerName") playerName: String): Player {
         log.info("New player {} joined game {}", playerName, gameId)
         val gameContainer = containers[gameId]
-
-        gameContainer?.addPlayer(playerName)
-
-        return Response(null)
+        return gameContainer!!.addPlayer(playerName)
     }
 
     @GetMapping("/games/{gameId}/game/{count}")
@@ -178,12 +175,14 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         lock.withLock { condition.signalAll() }
     }
 
-    fun addPlayer(name: String) = apply {
-        players.add(Player(name, colors[playerCount++]))
+    fun addPlayer(name: String): Player {
+        val newPlayer = Player(name, colors[playerCount++]);
+        players.add(newPlayer)
         increment()
+        return newPlayer
     }
 
-    fun startGame() = apply {
+    fun startGame() {
         manager = gameFactory.mainGame(players.map { it.name }.toList())
         increment()
     }

@@ -37,6 +37,7 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.draftSingle(currentState.currentPlayer, draft.territory, 1)
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }
@@ -51,6 +52,7 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.attack(currentState.currentPlayer, attack.from, attack.to)
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }
@@ -65,6 +67,7 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.move(currentState.currentPlayer, move.units)
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }
@@ -83,6 +86,7 @@ class RestController(private val territoryService: TerritoryService, private val
             }
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }
@@ -97,6 +101,7 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.fortify(currentState.currentPlayer, fortify.from, fortify.to, fortify.units)
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }

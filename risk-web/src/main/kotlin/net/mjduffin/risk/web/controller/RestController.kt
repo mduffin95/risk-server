@@ -176,6 +176,10 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
     }
 
     fun addPlayer(name: String): Player {
+        val existing = findPlayer(name)
+        if (existing != null) {
+            return existing
+        }
         val newPlayer = Player(name, colors[playerCount++]);
         players.add(newPlayer)
         increment()
@@ -220,8 +224,12 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         return GameVM("", "", 0, listOf(), errorMessage)
     }
 
+    private fun findPlayer(playerName: String): Player? {
+        return players.find { it.name == playerName }
+    }
+
     private fun getPlayer(playerName: String): Player {
-        return players.find { it.name == playerName } ?: throw IllegalArgumentException("Missing color for $playerName")
+        return findPlayer(playerName) ?: throw IllegalArgumentException("Missing color for $playerName")
     }
 
     private fun toTerritoryVM(territory: String, playerName: String, units: Int): TerritoryVM {

@@ -4,7 +4,6 @@ import net.mjduffin.risk.lib.usecase.GameState;
 import net.mjduffin.risk.lib.usecase.PlayerOutput;
 import net.mjduffin.risk.lib.usecase.request.Request;
 import net.mjduffin.risk.lib.usecase.request.RequestAcceptor;
-import org.jetbrains.annotations.NotNull;
 
 public class ConsoleManager implements PlayerOutput, ConsoleController {
     RequestAcceptor useCases;

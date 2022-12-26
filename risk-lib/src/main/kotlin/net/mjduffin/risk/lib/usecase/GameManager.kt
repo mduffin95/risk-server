@@ -210,7 +210,6 @@ class GameManager internal constructor(
             game.currentPlayer.name,
             game.state.name,
             game.currentDraftableUnits(),
-
             territories.map { it.name },
             occupyingPlayers,
             territories.map { game.getUnits(it) },

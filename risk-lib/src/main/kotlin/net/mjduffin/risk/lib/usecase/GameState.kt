@@ -6,4 +6,9 @@ data class GameState(
     val unitsToPlace: Int,
     val territories: List<String>,
     var occupyingPlayers: List<String>,
-    val units: List<Int>)
+    val units: List<Int>,
+    val lastAttackingTerritory: String? = null,
+    val lastDefendingTerritory: String? = null,
+    val lastAttackingUnitCount: Int? = null,
+    val maxToMove: Int? = null,
+)

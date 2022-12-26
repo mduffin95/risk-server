@@ -210,9 +210,14 @@ class GameManager internal constructor(
             game.currentPlayer.name,
             game.state.name,
             game.currentDraftableUnits(),
+
             territories.map { it.name },
             occupyingPlayers,
-            territories.map { game.getUnits(it) }
+            territories.map { game.getUnits(it) },
+            lastAttackingTerritory?.name,
+            lastDefendingTerritory?.name,
+            lastAttackingUnitCount,
+            lastAttackingTerritory?.let{ id -> game.getAvailableUnits(id) },
         )
         return gameState
     }

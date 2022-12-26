@@ -9,7 +9,15 @@ enum class Screen {
 
 data class ViewModel(val screen: Screen, val actionCount: Int, val model: Any)
 
-data class GameVM(val currentPlayer: String, val phase: String, val unitsToPlace: Int, val territories: List<TerritoryVM>, val error: String? = null)
+data class GameVM(
+    val currentPlayer: String,
+    val phase: String,
+    val unitsToPlace: Int,
+    val territories: List<TerritoryVM>,
+    val modal: ModalVM? = null,
+    val error: String? = null
+)
+data class ModalVM(val message: String, val min: Int, val max: Int)
 data class LobbyVM(val players: List<Player>)
 data class Player(val name: String, val color: String)
 data class Response(val error: String?)

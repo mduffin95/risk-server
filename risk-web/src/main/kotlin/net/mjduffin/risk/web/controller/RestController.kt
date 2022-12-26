@@ -67,7 +67,6 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.move(currentState.currentPlayer, move.units)
             container.increment()
         } catch (ex: Exception) {
-            return Response(ex.message)
         }
         return Response(null)
     }
@@ -221,12 +220,16 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
                 gameState.units[it],
             )
         }
+        var modal: ModalVM? = null
+        if (gameState.phase.equals("MOVE")) {
+            modal = ModalVM("Move from ${gameState.lastAttackingTerritory} to ${gameState.lastDefendingTerritory}", gameState.lastAttackingUnitCount!!, gameState.maxToMove!!)
+        }
 
-        return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories)
+        return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories, modal)
     }
 
     private fun error(errorMessage: String): GameVM {
-        return GameVM("", "", 0, listOf(), errorMessage)
+        return GameVM("", "", 0, listOf(), null, errorMessage)
     }
 
     private fun findPlayer(playerName: String): Player? {

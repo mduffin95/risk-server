@@ -61,6 +61,6 @@ class TerritoryService {
     }
 
     fun error(errorMessage: String): GameVM {
-        return GameVM("", "", 0, listOf(), errorMessage)
+        return GameVM("", "", 0, listOf(), null, errorMessage)
     }
 }

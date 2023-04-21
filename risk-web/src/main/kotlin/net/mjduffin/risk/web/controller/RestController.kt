@@ -222,7 +222,7 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         }
         var modal: ModalVM? = null
         if (gameState.phase.equals("MOVE")) {
-            modal = ModalVM("Move from ${gameState.lastAttackingTerritory} to ${gameState.lastDefendingTerritory}", gameState.lastAttackingUnitCount!!, gameState.maxToMove!!)
+            modal = ModalVM("Move from ${gameState.lastAttackingTerritory} to ${gameState.lastDefendingTerritory}", gameState.lastAttackingUnitCount, gameState.maxToMove!!)
         }
 
         return GameVM(gameState.currentPlayer, gameState.phase, gameState.unitsToPlace, territories, modal)

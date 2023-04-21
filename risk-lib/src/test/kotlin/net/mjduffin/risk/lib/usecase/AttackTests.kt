@@ -113,8 +113,11 @@ class AttackTests {
         gameManager.draft(PLAYER_C, mapOf(Pair("Scotland", 1)))
 
         var gameState = gameManager.getGameState()
-        assertEquals("ATTACK", gameState.phase)
+        assertEquals("DRAFT", gameState.phase)
         assertEquals(PLAYER_A, gameState.currentPlayer)
+
+        // place draft for player A
+        gameManager.draftSingle(PLAYER_A, "England", 3)
 
         // player A knocks out player B
         gameManager.attack(PLAYER_A, "England", "Wales")

@@ -38,14 +38,19 @@ class AttackTests {
     }
 
     @Test
-    fun attack() {
+    fun `attack and attacker wins`() {
         val dieThrow = Mockito.mock(DieThrow::class.java)
         Mockito.`when`(dieThrow.dieValue).thenReturn(6).thenReturn(6).thenReturn(6).thenReturn(1).thenReturn(1)
         val playerInput = createTwoPlayerGame(dieThrow)
+        // all draft
         playerInput.draft(PLAYER_A, mapOf(Pair("England", 3)))
         playerInput.draft(PLAYER_B, mapOf(Pair("Wales", 1)))
+        // draft
+        playerInput.draftSingle(PLAYER_A, "England", 3)
+
+        // attack
         val result = playerInput.attack(PLAYER_A, "England", "Wales")
-        assertEquals(4, result.attackUnits)
+        assertEquals(7, result.attackUnits)
         assertEquals(0, result.defendUnits)
     }
 
@@ -55,8 +60,12 @@ class AttackTests {
         Mockito.`when`(dieThrow.dieValue).thenReturn(1).thenReturn(2).thenReturn(3).thenReturn(3).thenReturn(3)
             .thenReturn(1).thenReturn(4)
         val playerInput = createTwoPlayerGame(dieThrow)
+        // all-draft
         playerInput.draft(PLAYER_A, mapOf(Pair("England", 3)))
         playerInput.draft(PLAYER_B, mapOf(Pair("Wales", 1)))
+        // draft
+        playerInput.draft(PLAYER_A, mapOf(Pair("England", 3)))
+        // attack
         val result = playerInput.attack(PLAYER_A, "England", "Wales")
 
         //There has to be one unit left for the attacker
@@ -74,9 +83,13 @@ class AttackTests {
         gameManager.draft(PLAYER_C, mapOf(Pair("Scotland", 1)))
 
         var gameState = gameManager.getGameState()
-        assertEquals("ATTACK", gameState.phase)
+        assertEquals("DRAFT", gameState.phase)
         assertEquals(PLAYER_A, gameState.currentPlayer)
 
+        // place draft for player A
+        gameManager.draftSingle(PLAYER_A, "England", 3)
+
+        assertEquals("ATTACK", gameManager.getGameState().phase)
         // player A knocks out player B
         gameManager.attack(PLAYER_A, "England", "Wales")
         gameManager.move(PLAYER_A, 3)

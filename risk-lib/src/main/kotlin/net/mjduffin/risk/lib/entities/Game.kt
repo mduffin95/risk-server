@@ -1,7 +1,12 @@
 package net.mjduffin.risk.lib.entities
 
+import net.mjduffin.risk.lib.entities.GameConstants.DRAFT_MAX
 import net.mjduffin.risk.lib.usecase.PlayerNotFoundException
 import net.mjduffin.risk.lib.usecase.TerritoryNotFoundException
+
+object GameConstants {
+    const val DRAFT_MAX = 10;
+}
 
 //Assume game is in draft mode as soon as it is created
 // immutable
@@ -33,7 +38,7 @@ class Game private constructor(
 
         private fun getUnitsMap(): Map<PlayerId, Int> {
             // TODO: Calculate draft properly
-            return players.map { it to 10 }.toMap()
+            return players.map { it to DRAFT_MAX }.toMap()
         }
 
         fun build(): Game {
@@ -123,7 +128,7 @@ class Game private constructor(
 
     private fun calculateDraft(playerId: PlayerId, board: Board, nextState: State): Int {
         return if (State.ALLDRAFT == nextState) {
-            10
+            DRAFT_MAX
         } else {
             var territoryBonus = totalTerritories(playerId) / 3
             if (territoryBonus < 3) {

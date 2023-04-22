@@ -15,7 +15,7 @@ class GameManager internal constructor(
     private var lastDefendingTerritory: TerritoryId? = null
 
     private fun isPlayerTurn(player: PlayerId): Boolean {
-        return player == game.currentPlayer || game.state == Game.State.ALLDRAFT
+        return player == game.currentPlayer || game.state === Game.State.ALLDRAFT
     }
 
     //Returns true if a particular player has finished drafting
@@ -197,7 +197,7 @@ class GameManager internal constructor(
         if (board.areConnected(from, to, game.territoryToPlayerMap)) {
             //Remove units from 'from' and add to 'to'
             game = game.moveUnits(from, to, units)
-            endTurn()
+            endTurn(playerName)
         } else {
             throw GameplayException("Territories not connected")
         }
@@ -221,8 +221,16 @@ class GameManager internal constructor(
         return gameState
     }
 
-    fun endTurn() {
-        game = game.nextPlayer()
-        game = game.nextState(board)
+    fun endTurn(playerName: String) {
+        val player = game.getPlayer(playerName)
+        if (!isPlayerTurn(player)) {
+            throw GameplayException("Not player's turn")
+        }
+
+        if (!finishedDrafting(player)) {
+            throw GameplayException("Not finished drafting")
+        }
+
+        game = game.nextPlayer().nextState(board)
     }
 }

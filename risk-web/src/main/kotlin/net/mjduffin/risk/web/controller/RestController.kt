@@ -34,7 +34,7 @@ class RestController(private val territoryService: TerritoryService, private val
         val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
         val currentState = gameManager.getGameState()
         try {
-            gameManager.draftSingle(currentState.currentPlayer, draft.territory, 1)
+            gameManager.draftSingle(draft.requestingPlayer, draft.territory, 1)
             container.increment()
         } catch (ex: Exception) {
             return Response(ex.message)
@@ -47,9 +47,8 @@ class RestController(private val territoryService: TerritoryService, private val
         log.info("Attack")
         val container = containers[gameId] ?: return Response("No game found for $gameId")
         val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
-        val currentState = gameManager.getGameState()
         try {
-            gameManager.attack(currentState.currentPlayer, attack.from, attack.to)
+            gameManager.attack(attack.requestingPlayer, attack.from, attack.to)
             container.increment()
         } catch (ex: Exception) {
             return Response(ex.message)
@@ -62,9 +61,8 @@ class RestController(private val territoryService: TerritoryService, private val
         log.info("Move")
         val container = containers[gameId] ?: return Response("No game found for $gameId")
         val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
-        val currentState = gameManager.getGameState()
         try {
-            gameManager.move(currentState.currentPlayer, move.units)
+            gameManager.move(move.requestingPlayer, move.units)
             container.increment()
         } catch (ex: Exception) {
         }
@@ -72,16 +70,19 @@ class RestController(private val territoryService: TerritoryService, private val
     }
 
     @PostMapping("/games/{gameId}/turn/end")
-    private fun end(@PathVariable("gameId") gameId: String): Response {
+    private fun end(@PathVariable("gameId") gameId: String, @RequestBody endTurn: EndTurn): Response {
         log.info("End turn for {}", gameId)
         val container = containers[gameId] ?: return Response("No game found for $gameId")
         val gameManager = container.getGameManager()
         val currentState = gameManager.getGameState()
+        if (currentState.currentPlayer != endTurn.requestingPlayer) {
+            return Response("Not able to end turn for ${endTurn.requestingPlayer}")
+        }
         try {
             if (currentState.phase.equals("ATTACK")) {
-                gameManager.endAttack(currentState.currentPlayer)
+                gameManager.endAttack(endTurn.requestingPlayer)
             } else {
-                gameManager.endTurn()
+                gameManager.endTurn(endTurn.requestingPlayer)
             }
             container.increment()
         } catch (ex: Exception) {
@@ -151,6 +152,9 @@ class RestController(private val territoryService: TerritoryService, private val
 }
 
 
+/**
+ * Holds all information relevant to a single game.
+ */
 class GameContainer(private val gameFactory: GameFactory, private val territoryService: TerritoryService) {
 
     private var manager: GameManager? = null
@@ -159,6 +163,7 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
     private val lock = ReentrantLock()
     private val condition = lock.newCondition()
 
+    // used by clients to determine if they have an up-to-date version of the game state
     var actionCount = 0
     var playerCount = 0
 
@@ -174,6 +179,9 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         lock.withLock { condition.await(3, TimeUnit.SECONDS) }
     }
 
+    /**
+     * Increments the counter that tracks actions taken in the game.
+     */
     fun increment() {
         actionCount++
         lock.withLock { condition.signalAll() }
@@ -195,18 +203,24 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
         increment()
     }
 
-    private fun hasStarted(): Boolean = manager != null
-
+    /**
+     * Get the view-model for the game.
+     */
     fun toViewModel(): ViewModel {
         return if (hasStarted()) {
-            ViewModel(Screen.GAME, actionCount, convert())
+            ViewModel(Screen.GAME, actionCount, getGameViewModel())
         } else {
             val lobby = LobbyVM(players)
             ViewModel(Screen.LOBBY, actionCount, lobby)
         }
     }
 
-    private fun convert(): GameVM {
+    private fun hasStarted(): Boolean = manager != null
+
+    /**
+     * Get the view-model for the game screen.
+     */
+    private fun getGameViewModel(): GameVM {
         if (!hasStarted()) {
             return error("Game not started")
         }

@@ -61,7 +61,7 @@ internal class DraftTests {
     }
 
     @Test
-    fun `can draft in two steps`() {
+    fun `can draft in multiple stages`() {
         // given
         val gameBuilder = Game.Builder()
 
@@ -80,5 +80,12 @@ internal class DraftTests {
         assertEquals(listOf("England", "Wales"), gameState.territories)
         assertEquals(listOf(BOB, ALICE), gameState.occupyingPlayers)
         assertEquals(listOf(7, 1), gameState.units)
+
+        // should not be able to end turn until finished drafting
+        assertFailsWith<GameplayException> { playerInput.endTurn(BOB) }
+
+        // finish drafting
+        playerInput.draftSingle(BOB, "England", 4)
+        assertEquals(ALICE, playerInput.getGameState().currentPlayer)
     }
 }

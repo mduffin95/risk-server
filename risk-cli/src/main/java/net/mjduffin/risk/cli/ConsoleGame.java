@@ -73,7 +73,8 @@ public class ConsoleGame {
                 fortifyRequest.getUnits());
         }
         if (request instanceof SkipFortifyRequest) {
-            gameManager.endTurn();
+            // should really find the requesting player
+            gameManager.endTurn(gameManager.getGameState().getCurrentPlayer());
         }
     }
 

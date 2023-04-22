@@ -94,7 +94,7 @@ class AttackTests {
         gameManager.attack(PLAYER_A, "England", "Wales")
         gameManager.move(PLAYER_A, 3)
         gameManager.endAttack(PLAYER_A)
-        gameManager.endTurn()
+        gameManager.endTurn(PLAYER_A)
 
         gameState = gameManager.getGameState()
         // player B doesn't have any territories left and has been eliminated, so play passes to player C
@@ -125,7 +125,7 @@ class AttackTests {
         gameManager.attack(PLAYER_A, "England", "Scotland")
         gameManager.move(PLAYER_A, 3)
         gameManager.endAttack(PLAYER_A)
-        gameManager.endTurn()
+        gameManager.endTurn(PLAYER_A)
 
         gameState = gameManager.getGameState()
         // player B doesn't have any territories left and has been eliminated, so play passes to player C

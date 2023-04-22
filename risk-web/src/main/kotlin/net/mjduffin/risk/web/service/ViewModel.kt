@@ -24,7 +24,8 @@ data class Response(val error: String?)
 
 data class TerritoryVM(val name: String, val top: Int, val left: Int, val player: Player, val units: Int)
 
-data class Draft(val territory: String)
-data class Attack(val from: String, val to: String)
-data class Fortify(val from: String, val to: String, val units: Int)
-data class Move(val units: Int)
+data class Draft(val requestingPlayer: String, val territory: String)
+data class Attack(val requestingPlayer: String, val from: String, val to: String)
+data class Fortify(val requestingPlayer: String, val from: String, val to: String, val units: Int)
+data class Move(val requestingPlayer: String, val units: Int)
+data class EndTurn(val requestingPlayer: String)

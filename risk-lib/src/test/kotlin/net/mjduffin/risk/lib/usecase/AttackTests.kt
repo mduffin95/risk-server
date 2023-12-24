@@ -101,7 +101,6 @@ class AttackTests {
         assertEquals(PLAYER_C, gameState.currentPlayer)
     }
 
-
     @Test
     fun `player wins game`() {
         val dieThrow = Mockito.mock(DieThrow::class.java)

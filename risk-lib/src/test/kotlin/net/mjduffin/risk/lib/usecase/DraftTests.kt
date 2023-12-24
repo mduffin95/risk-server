@@ -51,7 +51,6 @@ internal class DraftTests {
         // when
         gameBuilder.addPlayerWithTerritories(BOB, listOf("Wales"))
         gameBuilder.addPlayerWithTerritories(ALICE, listOf("England"))
-//        gameBuilder.addEdge("England", "Wales")
         val game = gameBuilder.build()
         val playerInput = getGameManagerFromGame(game)
         playerInput.draft(BOB, mapOf(Pair("Wales", 4)))

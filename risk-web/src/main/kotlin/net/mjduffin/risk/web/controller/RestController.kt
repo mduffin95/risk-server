@@ -18,11 +18,11 @@ val colors = listOf("red", "blue", "green", "violet", "orange", "magenta", "yell
 @RequestMapping("api")
 class RestController(private val territoryService: TerritoryService, private val gameFactory: GameFactory) {
 
-    val log: Logger = LoggerFactory.getLogger(RestController::class.java)
+    private val log: Logger = LoggerFactory.getLogger(RestController::class.java)
 
     private val containers: MutableMap<String, GameContainer> = mutableMapOf()
 
-    fun getGameManager(id: String): GameManager? {
+    private fun getGameManager(id: String): GameManager? {
         val container = containers[id] ?: return null
         return container.getGameManager()
     }
@@ -32,7 +32,6 @@ class RestController(private val territoryService: TerritoryService, private val
         log.info("Draft")
         val container = containers[gameId] ?: return Response("No game found for $gameId")
         val gameManager = getGameManager(gameId) ?: return Response("No game found for $gameId")
-        val currentState = gameManager.getGameState()
         try {
             gameManager.draftSingle(draft.requestingPlayer, draft.territory, 1)
             container.increment()
@@ -65,6 +64,7 @@ class RestController(private val territoryService: TerritoryService, private val
             gameManager.move(move.requestingPlayer, move.units)
             container.increment()
         } catch (ex: Exception) {
+            return Response(ex.message)
         }
         return Response(null)
     }
@@ -125,14 +125,14 @@ class RestController(private val territoryService: TerritoryService, private val
 
     @GetMapping("/games/{gameId}/game/{count}")
     fun game(@PathVariable("gameId") gameId: String, @PathVariable("count") count: Int): ViewModel {
-        val c = containers[gameId]
-        return if (c != null) {
-            val vm = c.toViewModel()
-            if (vm.actionCount > count) {
-                vm
+        val container = containers[gameId]
+        return if (container != null) {
+            val viewModel = container.toViewModel()
+            if (viewModel.actionCount > count) {
+                viewModel
             } else {
-                c.waitThreeSeconds()
-                c.toViewModel()
+                container.waitThreeSeconds()
+                container.toViewModel()
             }
         } else {
             ViewModel(Screen.ERROR, 0, "Container missing for $gameId")
@@ -142,8 +142,8 @@ class RestController(private val territoryService: TerritoryService, private val
     @PostMapping("/games/{gameId}/start")
     fun start(@PathVariable("gameId") gameId: String): Response {
         log.info("Start game {}", gameId)
-        val gameContainer = containers[gameId]!!
-        gameContainer.startGame()
+        val container = containers[gameId]!!
+        container.startGame()
         return Response(null)
     }
 
@@ -164,8 +164,8 @@ class GameContainer(private val gameFactory: GameFactory, private val territoryS
     private val condition = lock.newCondition()
 
     // used by clients to determine if they have an up-to-date version of the game state
-    var actionCount = 0
-    var playerCount = 0
+    private var actionCount = 0
+    private var playerCount = 0
 
     fun getGameManager(): GameManager {
         if (!hasStarted()) {

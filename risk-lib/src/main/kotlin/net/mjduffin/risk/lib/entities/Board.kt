@@ -41,7 +41,7 @@ class Board private constructor(
     }
 
     fun fullContinents(territories: Set<TerritoryId>): Set<Continent> {
-        return continents.filterValues { t -> territories.containsAll(t) }.keys
+        return continents.filterValues { territoriesInContinent -> territories.containsAll(territoriesInContinent) }.keys
     }
 
     private fun getConnected(territory: TerritoryId): Set<TerritoryId> {

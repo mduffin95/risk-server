@@ -114,7 +114,7 @@ class Game private constructor(
 
     fun goToState(newState: State): Game = goToState(newState, draftRemaining)
 
-    fun goToState(newState: State, draft: Map<PlayerId, Int>): Game {
+    private fun goToState(newState: State, draft: Map<PlayerId, Int>): Game {
         return Game(players, playerTerritories, territoryUnits, currentPlayer, newState, draft)
     }
 
@@ -140,12 +140,6 @@ class Game private constructor(
             territoryBonus + continentBonus
         }
     }
-
-//    private fun continentBonus(playerId: PlayerId): Int {
-//        val territories = playerTerritories.getOrDefault(playerId, listOf()).toSet()
-//
-//        board
-//    }
 
     val territoryToPlayerMap
         get() = playerTerritories.entries

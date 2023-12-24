@@ -1,6 +1,5 @@
 package net.mjduffin.risk.lib.entities
 
-import net.mjduffin.risk.lib.entities.DieThrow
 import java.util.*
 
 class RandomDieThrow : DieThrow {

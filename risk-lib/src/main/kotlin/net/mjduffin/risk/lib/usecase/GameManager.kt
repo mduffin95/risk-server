@@ -69,13 +69,13 @@ class GameManager internal constructor(
         }
     }
 
-    override fun draftSingle(playerName: String, territoryName: String, units: Int) {
+    override fun draftSingle(playerName: String, territory: String, units: Int) {
         //Verify that it's player's go (or ALL_DRAFT)
         val player = game.getPlayer(playerName)
         if (!isPlayerTurn(player)) {
             throw GameplayException("Not player's turn")
         }
-        val territoryId = TerritoryId(territoryName)
+        val territoryId = TerritoryId(territory)
         draftUnits(territoryId, player, units)
         if (game.state === Game.State.ALLDRAFT) {
             if (finishedDrafting(player)) {

@@ -64,10 +64,33 @@ internal class BoardTest {
             .build()
         val a = PlayerId("PlayerA")
         val b = PlayerId("PlayerB")
-        val playerLookup = mapOf(Pair(england, a), Pair(wales, b), Pair(scotland, b))
+        // Wales (player A) <-> England (Player A) <-> Scotland (Player B)
+        val playerLookup = mapOf(Pair(wales, b), Pair(england, a), Pair(scotland, b))
 
         // then
         assertFalse(board.areConnected(wales, scotland, playerLookup))
+    }
+
+    @Test
+    fun `unconnected territories should be rejected (longer chain)`() {
+        // given/when
+        val england = TerritoryId("England")
+        val wales = TerritoryId("Wales")
+        val ireland = TerritoryId("Ireland")
+        val scotland = TerritoryId("Scotland")
+        val board = Board.Builder()
+            .addEdge(ireland, wales)
+            .addEdge(england, wales)
+            .addEdge(england, scotland)
+            .build()
+        val a = PlayerId("PlayerA")
+        val b = PlayerId("PlayerB")
+        // Ireland (Player B) <-> Wales (player B) <-> England (Player A) <-> Scotland (Player B)
+        val playerLookup = mapOf(Pair(ireland, b), Pair(wales, b), Pair(england, a), Pair(scotland, b))
+
+        // then
+        // Ireland is not connected to Scotland because England is occupied by player A
+        assertFalse(board.areConnected(ireland, scotland, playerLookup))
     }
 
     @Test

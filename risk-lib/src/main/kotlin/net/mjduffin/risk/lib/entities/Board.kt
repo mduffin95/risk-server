@@ -24,17 +24,19 @@ class Board private constructor(
 
         val visited = mutableSetOf<TerritoryId>()
 
+        // find all the connected territories occupied by the same player
         val connected: Set<TerritoryId> = getConnected(a).filter { player == playerLookup[it] }.toSet()
         val queue: Queue<TerritoryId> = LinkedList()
         queue.addAll(connected)
 
         while (queue.isNotEmpty()) {
             val id = queue.poll()
+            // have we reached the other territory?
             if (id == b) {
                 return true
             }
             visited.add(id)
-            val unvisited = getConnected(id).filter { !visited.contains(it) }.toList()
+            val unvisited = getConnected(id).filter { !visited.contains(it) && player == playerLookup[it] }.toList()
             queue.addAll(unvisited)
         }
         return false

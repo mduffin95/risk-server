@@ -112,5 +112,11 @@
             <artifactId>kotlin-stdlib</artifactId>
             <version>1.9.22</version>
         </dependency>
+        <dependency>
+            <groupId>net.mjduffin</groupId>
+            <artifactId>risk-web</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

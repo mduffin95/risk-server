@@ -4,6 +4,9 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import net.mjduffin.risk.lib.usecase.GameFactory
+import net.mjduffin.risk.web.controller.RestController
+import net.mjduffin.risk.web.service.TerritoryService
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -14,6 +17,10 @@ import java.util.stream.Collectors
  * Handler for requests to Lambda function.
  */
 class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    // map of game ID to game container
+
+    private val restController: RestController = RestController(TerritoryService(), GameFactory());
 
     override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context?): APIGatewayProxyResponseEvent {
         val headers: MutableMap<String, String> = HashMap()

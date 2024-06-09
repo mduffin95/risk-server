@@ -1,4 +1,4 @@
-package net.mjduffin.risk.web.service
+package net.mjduffin.risk.lib
 
 
 enum class Screen {

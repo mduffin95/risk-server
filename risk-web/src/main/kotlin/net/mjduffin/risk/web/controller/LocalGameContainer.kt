@@ -1,9 +1,9 @@
-package net.mjduffin.risk.web.service
+package net.mjduffin.risk.web.controller
 
 import net.mjduffin.risk.lib.*
 import net.mjduffin.risk.lib.usecase.GameFactory
 import net.mjduffin.risk.lib.usecase.GameManager
-import net.mjduffin.risk.web.controller.colors
+import net.mjduffin.risk.web.service.TerritoryService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -13,7 +13,8 @@ import kotlin.concurrent.withLock
  */
 class LocalGameContainer(
     private val gameFactory: GameFactory,
-    private val territoryService: TerritoryService) : GameContainer {
+    private val territoryService: TerritoryService
+) : GameContainer {
 
     private var manager: GameManager? = null
     private val players: MutableList<Player> = mutableListOf()

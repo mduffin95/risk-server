@@ -1,5 +1,6 @@
 package net.mjduffin.risk.web.service
 
+import net.mjduffin.risk.lib.GameVM
 import org.springframework.stereotype.Service
 
 @Service

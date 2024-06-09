@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import net.mjduffin.risk.lib.usecase.GameFactory
 import net.mjduffin.risk.web.controller.RestController
-import net.mjduffin.risk.web.service.TerritoryService
+import net.mjduffin.risk.lib.TerritoryService
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader

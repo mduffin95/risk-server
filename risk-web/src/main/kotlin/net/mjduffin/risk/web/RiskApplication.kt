@@ -1,6 +1,9 @@
 package net.mjduffin.risk.web
 
+import net.mjduffin.risk.lib.RiskController
+import net.mjduffin.risk.lib.TerritoryService
 import net.mjduffin.risk.lib.usecase.GameFactory
+import net.mjduffin.risk.web.service.MapBasedGameContainerService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -19,9 +22,10 @@ fun main(args: Array<String>) {
 
 @Configuration
 open class GameConfiguration {
+
     @Bean
-    open fun gameManager(): GameFactory {
-        return GameFactory
+    open fun riskController(): RiskController {
+        return RiskController(MapBasedGameContainerService(GameFactory, TerritoryService))
     }
 
     @Value("\${cors.originPatterns:default}")

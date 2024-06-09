@@ -1,10 +1,6 @@
-package net.mjduffin.risk.web.service
+package net.mjduffin.risk.lib
 
-import net.mjduffin.risk.lib.GameVM
-import org.springframework.stereotype.Service
-
-@Service
-class TerritoryService {
+object TerritoryService {
     private val positionsMap = mapOf(
         // north america
         Pair("alaska", Pair(12, 6)),

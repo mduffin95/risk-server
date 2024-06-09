@@ -21,7 +21,7 @@ Resources:
   RiskFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: ../risk-lambda
+      CodeUri: .
       Handler: net.mjduffin.risk.lambda.App::handleRequest
       Runtime: java21
       Architectures:
@@ -36,6 +36,8 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+    Metadata:
+      BuildMethod: makefile
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

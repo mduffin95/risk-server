@@ -1,5 +1,5 @@
 {
-  "body": "{\"message\": \"hello world\"}",
+  "body": "{\"requestingPlayer\": \"Bob\", \"territory\": \"Wales\"}",
   "resource": "/{proxy+}",
   "path": "/games/foo/turn/draft",
   "httpMethod": "POST",

@@ -54,19 +54,19 @@ class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseE
 //            }
         )
         // check http method and convert to kotlin version
-        input.httpMethod
-
-        app.invoke(Request(input.httpMethod, ))
+        val method : Method = getMethod(input.httpMethod)
+        val request = Request(method, input.path).body(input.body)
+        val r = app.invoke(request)
 
         val response: APIGatewayProxyResponseEvent = APIGatewayProxyResponseEvent()
             .withHeaders(headers)
         try {
-            val pageContents = this.getPageContents("https://checkip.amazonaws.com")
-            val output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents)
+//            val pageContents = this.getPageContents("https://checkip.amazonaws.com")
+//            val output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents)
 
             return response
                 .withStatusCode(200)
-                .withBody(output)
+                .withBody(r.body.toString())
         } catch (e: IOException) {
             return response
                 .withBody("{}")
@@ -83,6 +83,14 @@ class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseE
                     System.lineSeparator()
                 )
             )
+        }
+    }
+
+    private fun getMethod(method: String) : Method {
+        return when (method) {
+            "POST" -> Method.POST
+            "GET" -> Method.GET
+            else -> throw IllegalArgumentException()
         }
     }
 }

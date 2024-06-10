@@ -38,6 +38,9 @@ class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseE
         val headers: MutableMap<String, String> = HashMap()
         headers["Content-Type"] = "application/json"
         headers["X-Custom-Header"] = "application/json"
+        headers["Access-Control-Allow-Origin"] = "*"; // Allow all origins
+        headers["Access-Control-Allow-Headers"] = "*"; // Allow all headers
+        headers["Access-Control-Allow-Methods"] = "OPTIONS,POST,GET"; // Allow specific methods
 
         val app: HttpHandler = routes(
             "/games/{gameId}/turn/draft" bind Method.POST to { req: Request ->

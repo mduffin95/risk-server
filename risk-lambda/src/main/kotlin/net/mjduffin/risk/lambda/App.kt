@@ -43,12 +43,17 @@ class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseE
         headers["Access-Control-Allow-Methods"] = "OPTIONS,POST,GET"; // Allow specific methods
 
         val app: HttpHandler = routes(
-            "/games/{gameId}/turn/draft" bind Method.POST to { req: Request ->
+            "/api/games/{gameId}/turn/draft" bind Method.POST to { req: Request ->
                 val gameId: String = req.path("gameId")!!
                 val draft = mapper.readValue<Draft>(req.body.stream)
                 val gameResponse = restController.draft(gameId, draft)
                 val writeValue = mapper.writeValueAsString(gameResponse)
                 Response(OK).body(writeValue)
+            },
+            "/api/games" bind Method.POST to { req: Request ->
+                println("Creating new game")
+                val id = restController.newGame()
+                Response(OK).body(id)
             },
 //            "/ping" bind Method.GET to { _: Request -> Response(OK).body("pong!") },
 //            "/greet/{name}" bind Method.GET to { req: Request ->
@@ -58,7 +63,11 @@ class App : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseE
         )
         // check http method and convert to kotlin version
         val method : Method = getMethod(input.httpMethod)
-        val request = Request(method, input.path).body(input.body)
+        var request = Request(method, input.path)
+        if (input.body != null) {
+            request = request.body(input.body)
+        }
+        println("Invoking routes for request $request")
         val r = app.invoke(request)
 
         val response: APIGatewayProxyResponseEvent = APIGatewayProxyResponseEvent()

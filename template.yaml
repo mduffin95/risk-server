@@ -10,7 +10,10 @@ Globals:
   Function:
     Timeout: 20
     MemorySize: 512
-
+    Environment:
+      Variables:
+        TABLE_NAME:
+          Ref: GameStateTable
     Tracing: Active
     # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
@@ -37,6 +40,9 @@ Resources:
             RestApiId: !Ref RiskApiGateway
             Path: /api/{proxy+}
             Method: ANY
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameStateTable
     Metadata:
       BuildMethod: makefile
 
@@ -49,6 +55,12 @@ Resources:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowOrigin: "'*'"
         AllowHeaders: "'*'"
+
+  # The results table storing the normalised form data
+  GameStateTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub "${AWS::StackName}-${AWS::Region}-${AWS::AccountId}"
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

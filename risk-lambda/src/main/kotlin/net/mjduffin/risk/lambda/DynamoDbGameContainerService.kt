@@ -46,6 +46,7 @@ class DynamoDbGameContainerService : GameContainerService {
             .build();
         val customerTable : DynamoDbTable<DynamoDbGame> = client.table(tableNameVal, gameTableSchema);
 
+        // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/ddb-en-client-gs-use.html
         customerTable.
 
 //        val itemValues = mutableMapOf<String, AttributeValue>()
